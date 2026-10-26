@@ -1,0 +1,58 @@
+// Exercises every physics feature of the .hbs format (JSON5 on purpose).
+{
+  name: "Stress",
+  width: 500, height: 260, spawnDistance: 220,
+  kickOffReset: "full",
+  cameraFollow: "player",
+  bg: { type: "hockey", width: 400, height: 200, kickOffRadius: 60, cornerRadius: 30, goalLine: 380, color: "202020" },
+  playerPhysics: { kickStrength: 6.5, kickback: 1.5, acceleration: 0.11, damping: 0.955, gravity: [0, 0.005], radius: 14 },
+  ballPhysics: { radius: 9, bCoef: 0.6, damping: 0.985, gravity: [0, 0.01], cGroup: ["ball"] },
+  redSpawnPoints: [[-200, -60], [-200, 60]],
+  blueSpawnPoints: [[200, 0]],
+  traits: {
+    wall: { bCoef: 0.8, cMask: ["ball", "red", "blue"], color: "AAAAAA" },
+    net: { bCoef: 0.1, cMask: ["ball"], vis: true, },
+  },
+  vertexes: [
+    { x: -400, y: -200, trait: "wall" }, { x: 400, y: -200, trait: "wall" },
+    { x: 400, y: 200, trait: "wall" }, { x: -400, y: 200, trait: "wall" },
+    { x: -400, y: -60, trait: "net" }, { x: -440, y: 0, trait: "net" }, { x: -400, y: 60, trait: "net" },
+    { x: 400, y: -60, trait: "net" }, { x: 440, y: 0, trait: "net" }, { x: 400, y: 60, trait: "net" },
+    { x: -150, y: -120 }, { x: 150, y: -120 }, { x: 0, y: 120 },
+  ],
+  segments: [
+    { v0: 0, v1: 1, trait: "wall", curve: 20 },
+    { v0: 2, v1: 3, trait: "wall", curve: -20, bias: 10 },
+    { v0: 3, v1: 0, trait: "wall", bias: -5 },
+    { v0: 1, v1: 2, trait: "wall", curveF: -4 },
+    { v0: 4, v1: 5, trait: "net", curve: 45 }, { v0: 5, v1: 6, trait: "net", curve: 45 },
+    { v0: 7, v1: 8, trait: "net", curve: -45 }, { v0: 8, v1: 9, trait: "net", curve: -45 },
+    { v0: 10, v1: 11, curve: 250, bCoef: 0.3, cMask: ["ball"] },
+    { v0: 11, v1: 12, curve: -30, bias: -20, cMask: ["red", "blue"] },
+  ],
+  planes: [
+    { normal: [0, 1], dist: -260, bCoef: 0 }, { normal: [0, -1], dist: -260 },
+    { normal: [1, 0], dist: -500, bCoef: 0.2 }, { normal: [-3, 0], dist: -500 },
+    { normal: [1, 1], dist: -560, cMask: ["ball"] },
+  ],
+  goals: [
+    { p0: [-400, -60], p1: [-400, 60], team: "red" },
+    { p0: [400, -60], p1: [400, 60], team: "blue" },
+  ],
+  discs: [
+    { pos: [-400, -60], radius: 6, invMass: 0, color: "FFCCCC" },
+    { pos: [-400, 60], radius: 6, invMass: 0, color: "FFCCCC" },
+    { pos: [400, -60], radius: 6, invMass: 0, color: "CCCCFF" },
+    { pos: [400, 60], radius: 6, invMass: 0, color: "CCCCFF" },
+    { pos: [0, -150], radius: 12, invMass: 0.5, damping: 0.97, color: "transparent" },
+    { pos: [40, -150], radius: 8, invMass: 1.5, damping: 0.99, speed: [1, 0.5], gravity: [0, 0.02] },
+    { pos: [0, 160], radius: 10, invMass: 0.8, cGroup: ["wall", "c0"], cMask: ["ball", "red", "blue", "c0"] },
+    { pos: [60, 160], radius: 10, invMass: 0.8, cGroup: ["wall", "c0"], cMask: ["all", "c0"] },
+  ],
+  joints: [
+    { d0: 5, d1: 6 },
+    { d0: 7, d1: 8, length: [40, 90], strength: 0.05, color: "FF0000" },
+    { d0: 6, d1: 1, length: 300, strength: "rigid" },
+    { d0: 0, d1: 5, length: [20, 200], strength: 0.002 },
+  ],
+}
