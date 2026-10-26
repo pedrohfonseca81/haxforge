@@ -69,8 +69,9 @@ export async function duplicateProject(id: string): Promise<void> {
 export async function goHome(): Promise<void> {
   playMode.set(null);
   if (editor.get()) await saveNow();
-  editor.set(null);
+  // Leave the editor screen first, so nothing on it reacts to the map going away.
   screen.set({ name: "home" });
+  editor.set(null);
 }
 
 export async function readFile(file: File): Promise<void> {

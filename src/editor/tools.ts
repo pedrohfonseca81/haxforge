@@ -9,7 +9,7 @@ import { overlay } from "./draw";
 import { createSmart, isLinked, refsOf, shiftSmart, smartOf, smartSelected } from "../smart/smart";
 import { toast } from "./toast";
 import { curveThrough, hitTest, marquee, roundFor, segmentMid, snap, type Snap, type Vec } from "./geom";
-import { beginGesture, commit, ed, endGesture, patch, prefs, requestDraw, select, view, type ToolId } from "./state";
+import { beginGesture, commit, ed, editor, endGesture, patch, prefs, requestDraw, select, view, type ToolId } from "./state";
 
 // ---- Coordinates ----------------------------------------------------------------
 
@@ -117,8 +117,9 @@ const measure = (a: Vec, b: Vec) => {
 
 // The curve handle of the only selected segment, if any.
 function curveHandle(): { ref: Ref; p: Vec; a: Vec; b: Vec; useCurveF: boolean } | null {
-  const s = ed();
-  if (s.tool !== "select" || s.selection.length !== 1) return null;
+  // Also runs while the editor closes, when there is no map anymore.
+  const s = editor.get();
+  if (!s || s.tool !== "select" || s.selection.length !== 1) return null;
   const f = findItem(s.doc, s.selection[0]);
   if (!f || f.list !== "segments") return null;
   const g = geo().segments[f.index];
