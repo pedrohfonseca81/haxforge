@@ -21,7 +21,9 @@ Crie do zero, gere um campo em segundos ou abra um `.hbs` e edite sem perder uma
 
 ### Letreiro de verdade
 
-Digite um texto e ele vira segmentos no campo. A fonte própria, **Haxforge Sans**, é feita de retas e **arcos nativos do HaxBall**: um "O" custa 4 vértices e 4 segmentos e fica liso em qualquer zoom. Rotação, curvatura (texto em arco), várias linhas, acentos, decorativo ou sólido. Também aceita fontes TTF/OTF/WOFF.
+Digite um texto e ele vira segmentos no campo. A fonte própria, **Haxforge Sans**, é feita de retas e **arcos nativos do HaxBall**: um "O" custa 4 vértices e 4 segmentos e fica liso em qualquer zoom. Rotação, curvatura (texto em arco), várias linhas, acentos, decorativo ou sólido.
+
+**46 fontes** numa galeria com prévia do seu texto e o custo em segmentos: 15 de traço único (Hershey e EMS: sans, serif, cursivas, gótica, techno), 30 do Google Fonts (Bebas Neue, Anton, Press Start 2P, Pacifico…) e as suas, em TTF/OTF/WOFF.
 
 </td>
 <td width="50%"><img src="docs/screenshots/letreiro.webp" alt="Letreiro HAXBOOK desenhado no campo de futsal"></td>
@@ -140,4 +142,5 @@ Cada push na `main` publica o site no GitHub Pages ([`.github/workflows/pages.ym
 
 - Física, regras, netcode e renderer clássico vêm do **kickr**, uma reimplementação do HaxBall conferida bit a bit contra o original.
 - Os estádios-modelo foram exportados do próprio HaxBall. O **Futsal x3** é do Bazinga (HaxMaps).
+- As fontes de traço único são as **Hershey** (Dr. A. V. Hershey, U.S. National Bureau of Standards) e as **EMS** da Evil Mad Scientist (SIL OFL), pelo pacote [hersheytext](https://github.com/techninja/hersheytextjs). Avisos completos em [`src/smart/STROKE_FONTS.md`](src/smart/STROKE_FONTS.md). As fontes do Google Fonts vêm do CDN do [Fontsource](https://fontsource.org).
 - HaxBall é de Mario Carbajal (basro). O haxforge é um projeto independente de fã.

@@ -229,3 +229,27 @@ describe("fonte TTF", () => {
     expect(() => compileStadium(toJson(doc))).not.toThrow();
   });
 });
+
+describe("fontes de traço", () => {
+  test("every stroke font writes Portuguese text that compiles, cheaply", async () => {
+    const { ensureFont, STROKE_FONTS } = await import("./fonts");
+    for (const [id] of STROKE_FONTS) {
+      await ensureFont(`stroke:${id}`);
+      const { doc } = createSmart(blank(), "text", { text: "Ação Gol", font: `stroke:${id}`, size: 40 });
+      expect(() => compileStadium(toJson(doc))).not.toThrow();
+      // 8 characters (Ç is a C plus a cedilla) fit the limit even in the richest fonts.
+      expect(doc.lists.segments.length).toBeGreaterThan(8);
+      expect(doc.lists.segments.length).toBeLessThan(255);
+      if (id === "hershey-sans") expect(doc.lists.segments.length).toBeLessThan(40);
+      const g = resolve(doc);
+      expect(g.segments.every((s) => s!.cMask === 0)).toBe(true);
+    }
+  });
+
+  test("a missing stroke font is reported, then works once loaded", async () => {
+    const fonts = await import("./fonts");
+    expect(fonts.fontLabel("stroke:hershey-gothic")).toBe("Gótica");
+    expect(fonts.fontLabel("google:bebas-neue")).toBe("Bebas Neue");
+    expect(fonts.fontReady("")).toBe(true);
+  });
+});

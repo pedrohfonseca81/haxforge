@@ -14,6 +14,7 @@ import { createArray, createMirror, createSmart, refsOf, smartCost, updateSmart,
 import { Builder, type Pt } from "../smart/builder";
 import { compileStadium } from "../vendor/kickr/shared/stadium";
 import { listProjects } from "../persist/db";
+import { ensureFont, GOOGLE_FONTS, STROKE_FONTS } from "../smart/fonts";
 import { createBlank, createField, importAsProject, openProject } from "../app";
 
 export interface AgentTool {
@@ -342,7 +343,7 @@ export const TOOLS: AgentTool[] = [
   {
     name: "add_text",
     title: "Letreiro",
-    description: "Escreve um texto no mapa com segmentos (objeto inteligente, reeditável). Parâmetros: text (\\n quebra linha), x, y (centro), size (altura das maiúsculas), angle (graus, anti-horário), bend (curvatura em graus), spacing, lineHeight, align (left|center|right), color, bold, solid (none = decorativo, ball, all), font (nome de uma fonte enviada; vazio = fonte de traço barata).",
+    description: `Escreve um texto no mapa com segmentos (objeto inteligente, reeditável). Parâmetros: text (\\n quebra linha), x, y (centro), size (altura das maiúsculas), angle (graus, anti-horário), bend (curvatura em graus), spacing, lineHeight, align (left|center|right), color, bold, solid (none = decorativo, ball, all), font: vazio = Haxforge Sans (traço, a mais barata); "stroke:<id>" = traço único (${STROKE_FONTS.map(([id]) => id).join(", ")}); "google:<id>" = contorno do Google Fonts (${GOOGLE_FONTS.map(([id]) => id).join(", ")}), mais caro.`,
     inputSchema: {
       type: "object",
       properties: {
@@ -362,7 +363,8 @@ export const TOOLS: AgentTool[] = [
       },
       required: ["text"],
     },
-    run: (i) => {
+    run: async (i) => {
+      if (typeof i.font === "string") await ensureFont(i.font);
       const made = createSmart(open().doc, "text", i);
       commit(made.doc, refsOf(made.smart.items));
       return { id: made.smart.id, cost: smartCost(made.smart) };
@@ -391,10 +393,12 @@ export const TOOLS: AgentTool[] = [
     title: "Ajustar objeto inteligente",
     description: "Muda parâmetros de um objeto inteligente (veja smartObjects em get_map): letreiro, campo, padrão, desenho, espelho ou repetição. Os parâmetros são mesclados e o objeto é refeito no lugar.",
     inputSchema: { type: "object", properties: { id: { type: "string" }, params: { type: "object", additionalProperties: true } }, required: ["id", "params"] },
-    run: (i) => {
+    run: async (i) => {
       const doc = open().doc;
       const sm = doc.smart.find((x) => x.id === i.id);
       if (!sm) throw new ToolError(`Não existe objeto inteligente "${String(i.id)}"`);
+      const font = obj(i.params).font;
+      if (typeof font === "string") await ensureFont(font);
       commit(updateSmart(doc, sm.id, { ...sm.params, ...obj(i.params) }));
       const now = ed().doc.smart.find((x) => x.id === sm.id)!;
       return { id: sm.id, cost: smartCost(now) };

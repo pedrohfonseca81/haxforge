@@ -1,10 +1,10 @@
 // Parameters of a smart object: every change regenerates it in place.
 import { useEffect, useRef, useState } from "preact/hooks";
-import { addFont, fontNames, MissingFont } from "../smart/fonts";
-import { putFont } from "../persist/db";
+import { ensureFont, fontLabel, MissingFont } from "../smart/fonts";
+import { FontGallery } from "./FontGallery";
 import { toast } from "../editor/toast";
 import { useStore } from "../vendor/kickr/client/store";
-import { Trash2, Unlink } from "lucide-preact";
+import { ChevronDown, Trash2, Unlink } from "lucide-preact";
 import type { Json, JsonObject } from "../doc/json";
 import type { Smart } from "../doc/model";
 import { deleteRefs } from "../doc/ops";
@@ -42,7 +42,7 @@ const TEXT: PDef[] = [
   { key: "lineHeight", label: "Entre linhas", kind: "range", min: 8, max: 30, step: 0.5 },
   { key: "align", label: "Alinhamento", kind: "segmented", options: [["left", "Esq."], ["center", "Centro"], ["right", "Dir."]] },
   { key: "color", label: "Cor", kind: "color" },
-  { key: "bold", label: "Negrito", kind: "bool", hint: "Traço duplo: dobra o custo.", show: (p) => !p.font },
+  { key: "bold", label: "Negrito", kind: "bool", hint: "Traço duplo: dobra o custo.", show: (p) => !p.font || String(p.font).startsWith("stroke:") },
   { key: "tolerance", label: "Simplificação", kind: "range", min: 0.1, max: 6, step: 0.1, hint: "Quanto o contorno pode se afastar da fonte: maior = menos segmentos.", show: (p) => !!p.font },
   { key: "solid", label: "Colisão", kind: "select", options: [["none", "Decorativo (não colide)"], ["ball", "Sólido para a bola"], ["all", "Sólido para todos"]] },
   { key: "bounce", label: "Quique", kind: "range", min: 0, max: 2, step: 0.05, show: (p) => p.solid !== "none" },
@@ -137,7 +137,15 @@ export function SmartPanel({ s, smart }: { s: EditorState; smart: Smart }) {
     try {
       commit(updateSmart(ed().doc, smart.id, params));
     } catch (e) {
-      toast(e instanceof MissingFont ? `A fonte "${e.font}" não está neste navegador: envie o arquivo dela para editar este letreiro.` : (e as Error).message, "error");
+      if (!(e instanceof MissingFont)) return toast((e as Error).message, "error");
+      // Stroke and Google fonts can be fetched; then try again.
+      const font = e.font;
+      if (font.startsWith("stroke:") || font.startsWith("google:")) {
+        void ensureFont(font).then(
+          () => commit(updateSmart(ed().doc, smart.id, params)),
+          (err) => toast((err as Error).message, "error"),
+        );
+      } else toast(`A fonte "${fontLabel(font)}" não está neste navegador: envie o arquivo dela para editar este letreiro.`, "error");
     }
   };
   const title = { text: "Letreiro", field: "Campo gerado", pattern: "Padrão", shape: "Desenho (SVG/imagem)", mirror: "Cópia espelhada", array: "Repetição" }[smart.kind];
@@ -205,7 +213,7 @@ export function SmartPanel({ s, smart }: { s: EditorState; smart: Smart }) {
           </button>
         </div>
       )}
-      {smart.kind === "text" && <FontPicker value={String(values.font ?? "")} onChange={(f) => set("font", f)} />}
+      {smart.kind === "text" && <FontPicker value={String(values.font ?? "")} sample={String(values.text ?? "")} onChange={(f) => set("font", f)} />}
       {defs.filter((d) => !d.show || d.show(values)).map((d) => (
         <Field key={d.key} label={d.label} hint={d.hint} wide={d.kind === "textarea"}>
           <ParamControl def={d} value={values[d.key]} onChange={(v) => set(d.key, v)} />
@@ -258,38 +266,15 @@ function ParamControl({ def, value, onChange }: { def: PDef; value: Json; onChan
   }
 }
 
-function FontPicker({ value, onChange }: { value: string; onChange: (font: string) => void }) {
-  const names = useStore(fontNames);
-  const input = useRef<HTMLInputElement>(null);
-  const options: [string, string][] = [["", "Haxforge Sans (traço, barato)"], ...names.map((n): [string, string] => [n, n])];
-  if (value && !names.includes(value)) options.push([value, `${value} (não carregada)`]);
+function FontPicker({ value, sample, onChange }: { value: string; sample: string; onChange: (font: string) => void }) {
+  const [open, setOpen] = useState(false);
   return (
-    <Field label="Fonte" hint="Fontes enviadas (TTF, OTF, WOFF) desenham o contorno das letras: ficam fiéis à fonte, mas custam bem mais.">
-      <div class="stack">
-        <Select value={value} options={options} onChange={onChange} />
-        <button class="chip" onClick={() => input.current?.click()}>
-          Enviar fonte…
-        </button>
-        <input
-          ref={input}
-          type="file"
-          accept=".ttf,.otf,.woff"
-          hidden
-          onChange={async (e) => {
-            const f = (e.target as HTMLInputElement).files?.[0];
-            (e.target as HTMLInputElement).value = "";
-            if (!f) return;
-            try {
-              const data = await f.arrayBuffer();
-              const name = await addFont(data, f.name.replace(/\.[^.]+$/, ""));
-              await putFont({ name, data });
-              onChange(name);
-            } catch {
-              toast("Não consegui ler essa fonte (use TTF, OTF ou WOFF).", "error");
-            }
-          }}
-        />
-      </div>
+    <Field label="Fonte" hint="Traço único é barato; fontes de contorno (Google ou enviadas) custam mais.">
+      <button class="font-button" onClick={() => setOpen(true)}>
+        <span>{fontLabel(value)}</span>
+        <ChevronDown size={14} />
+      </button>
+      {open && <FontGallery current={value} sample={sample} onPick={onChange} onClose={() => setOpen(false)} />}
     </Field>
   );
 }
