@@ -1,12 +1,13 @@
 // Plays the map being edited, with HaxBall's renderer and netcode: full
 // screen, or next to the editor with every edit reloaded live.
 import { useEffect, useRef, useState } from "preact/hooks";
-import { ChevronsRight, Columns2, Maximize2, Pause, Play as PlayIcon, RotateCcw, StepForward, Users, Activity, X } from "lucide-preact";
+import { ChevronsRight, Columns2, Maximize2, Pause, Play as PlayIcon, RotateCcw, StepForward, Users, Activity, X, Target, Zap, ShieldAlert } from "lucide-preact";
 import { toJson, type Doc } from "../doc/model";
 import { editor } from "../editor/state";
 import { P1, P2, Playground as Engine } from "../play/engine";
 import { keyMap } from "../play/keys";
-import { playMode, type PlayMode } from "../play/mode";
+import { playgroundTool, playMode, stressTargetSegment, type PlaygroundTool, type PlayMode } from "../play/mode";
+import { autoStressSegment, autoStressStadium, drawStresserOverlay, simulateStressBurst, type StressBurstResult, type StressPattern } from "../play/stresser";
 import { render as renderGame, VIEW_MODES, type Camera } from "../vendor/haxball/client/render";
 import { Input, isOvertime } from "../vendor/haxball/shared/game";
 import { DEFAULT_COLORS, TICK_MS } from "../vendor/haxball/shared/protocol";
@@ -25,10 +26,12 @@ interface PlaySettings {
   stats: boolean;
 }
 const KEY = "haxforge.play";
-const DEFAULTS: PlaySettings = { extrapolation: 0, lag: 0, twoPlayers: false, viewMode: -1, stats: true };
+const DEFAULTS: PlaySettings = { extrapolation: 0, lag: 0, twoPlayers: false, viewMode: -1, stats: false };
 function load(): PlaySettings {
   try {
-    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? "{}") };
+    const s = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? "{}") };
+    s.stats = false;
+    return s;
   } catch {
     return DEFAULTS;
   }
@@ -73,7 +76,9 @@ function getHelp(): string[] {
       "/speed <x>  velocidade do tempo (ex.: 0.25)",
       "/reset  recomeça a partida",
       "/p2  liga/desliga o segundo jogador (blue: WASD + Shift esquerdo/Q)",
-      "P pausa · . avança um frame · 0-7 zoom · arraste no campo para lançar a bola",
+      "/stresser  alterna entre lançador e stresser de parede",
+      "/audit  audita todas as paredes do mapa para achar varamentos",
+      "P pausa · . avança frame · S alternar lançador/stresser · 0-7 zoom · arraste para testar",
     ],
     [
       "/extrapolation <ms>  render ahead (-200 to 1000)",
@@ -81,7 +86,9 @@ function getHelp(): string[] {
       "/speed <x>  time speed (e.g. 0.25)",
       "/reset  restart match",
       "/p2  toggle second player (blue: WASD + Left Shift/Q)",
-      "P pause · . step one frame · 0-7 zoom · drag on field to launch the ball",
+      "/stresser  toggle launcher and wall stresser",
+      "/audit  audit all walls for tunneling vulnerabilities",
+      "P pause · . step frame · S toggle launcher/stresser · 0-7 zoom · drag to test",
     ],
   );
 }
@@ -96,6 +103,27 @@ let lineId = 0;
 export function Playground({ mode }: { mode: PlayMode }) {
   useStore(lang);
   const settings = useStore(playSettings);
+  const tool = useStore(playgroundTool);
+  const [stressPattern, setStressPattern] = useState<StressPattern>("single");
+  const [stressSpeed, setStressSpeed] = useState<number>(25);
+  const [auditHighlight, setAuditHighlight] = useState<Set<number> | null>(null);
+  const [stressResultHud, setStressResultHud] = useState<StressBurstResult | null>(null);
+  const [stressHudClosed, setStressHudClosed] = useState(false);
+
+  const toolRef = useRef(tool);
+  toolRef.current = tool;
+  const stressPatternRef = useRef(stressPattern);
+  stressPatternRef.current = stressPattern;
+  const stressSpeedRef = useRef(stressSpeed);
+  stressSpeedRef.current = stressSpeed;
+  const auditHighlightRef = useRef(auditHighlight);
+  auditHighlightRef.current = auditHighlight;
+  const stressDrag = useRef<{
+    origin: [number, number];
+    end: [number, number];
+    result: StressBurstResult;
+  } | null>(null);
+
   const root = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
@@ -153,6 +181,33 @@ export function Playground({ mode }: { mode: PlayMode }) {
     };
   }, []);
 
+  // Focus and stress test a target segment when requested from editor/context menu
+  useEffect(() => {
+    const unsub = stressTargetSegment.subscribe((segIdx) => {
+      if (segIdx === null) return;
+      const pg = engineRef.current;
+      if (!pg) return;
+      playgroundTool.set("stresser");
+      const res = autoStressSegment(pg.stadium, segIdx, pg.game.discs[0]);
+      if (!res.isSecure) {
+        setAuditHighlight(new Set([segIdx]));
+        print(
+          tr(
+            `⚠️ Segmento #${segIdx} VARA A PAREDE! Falhou a partir de ${res.minBreachSpeed?.toFixed(1)} u/f (${res.breachCount} falhas em ${res.totalTests} testes)`,
+            `⚠️ Segment #${segIdx} TUNNELS WALL! Failed starting at ${res.minBreachSpeed?.toFixed(1)} u/f (${res.breachCount} fails in ${res.totalTests} tests)`,
+          ),
+          true,
+        );
+        for (const tip of res.tips) print(`  💡 ${tip}`, false);
+      } else {
+        setAuditHighlight(null);
+        print(tr(`✅ Segmento #${segIdx} 100% seguro contra varamento! (${res.totalTests} testes)`, `✅ Segment #${segIdx} 100% secure against tunneling! (${res.totalTests} tests)`));
+      }
+      stressTargetSegment.set(null);
+    });
+    return unsub;
+  }, []);
+
   // Render loop and keyboard.
   const launch = useRef<{ origin: [number, number]; end: [number, number] } | null>(null);
   const inverse = useRef<DOMMatrix | null>(null);
@@ -184,7 +239,11 @@ export function Playground({ mode }: { mode: PlayMode }) {
       const st = playSettings.get();
       renderGame(ctx, pg.stadium, g, P1, cam, { mode: st.viewMode, bottomInset: 0, dt: dt / 1000, style: "classic", colors: DEFAULT_COLORS, avatars: { [P1]: "1", [P2]: "2" } });
       inverse.current = ctx.getTransform().inverse();
-      drawLaunch(ctx, pg);
+      if (toolRef.current === "launcher") {
+        drawLaunch(ctx, pg);
+      } else {
+        drawStress(ctx, pg);
+      }
       if (now - hudAt > 100) {
         hudAt = now;
         const ahead = pg.framesAhead();
@@ -238,6 +297,10 @@ export function Playground({ mode }: { mode: PlayMode }) {
       }
       if (e.code === "KeyP" && !e.repeat && pg) return togglePause(pg);
       if (e.code === "Period" && pg?.paused) return pg.stepFrame();
+      if (e.code === "KeyS" && !e.repeat && !pg?.twoPlayers) {
+        playgroundTool.set(playgroundTool.get() === "launcher" ? "stresser" : "launcher");
+        return;
+      }
       // Like HaxBall: 0 = Restricted 840x410, 1-7 = Full 1x..2.5x zoom.
       const digit = /^Digit([0-7])$/.exec(e.code);
       if (digit && !e.repeat) return playSettings.update({ viewMode: Number(digit[1]) });
@@ -308,6 +371,22 @@ export function Playground({ mode }: { mode: PlayMode }) {
       case "p2":
         playSettings.update({ twoPlayers: !playSettings.get().twoPlayers });
         return restartEngine();
+      case "stresser":
+        playgroundTool.set(playgroundTool.get() === "launcher" ? "stresser" : "launcher");
+        return print(
+          tr(
+            `Modo: ${playgroundTool.get() === "stresser" ? "⚡ Stresser de Parede" : "🎯 Lançador normal"}`,
+            `Mode: ${playgroundTool.get() === "stresser" ? "⚡ Wall Stresser" : "🎯 Normal Launcher"}`,
+          ),
+        );
+      case "audit":
+        return runAuditAllWalls();
+      case "pattern":
+        if (arg === "single" || arg === "fan" || arg === "radial") {
+          setStressPattern(arg);
+          return print(tr(`Padrão do stresser: ${arg}`, `Stresser pattern: ${arg}`));
+        }
+        return print(tr("Uso: /pattern single | fan | radial", "Usage: /pattern single | fan | radial"), true);
       case "help":
         return getHelp().forEach((h) => print(h));
       default:
@@ -379,6 +458,72 @@ export function Playground({ mode }: { mode: PlayMode }) {
     ctx.restore();
   }
 
+  const runAuditAllWalls = () => {
+    const pg = engineRef.current;
+    if (!pg) return;
+    const audit = autoStressStadium(pg.stadium, pg.game.discs[0]);
+    if (audit.totalVulnerabilities > 0) {
+      const vulnSet = new Set(audit.vulnerableSegments.keys());
+      setAuditHighlight(vulnSet);
+      print(
+        tr(
+          `⚠️ Auditoria: ${audit.totalVulnerabilities} parede(s) vulnerável(is) a varamento detectada(s)! (Destacadas em vermelho)`,
+          `⚠️ Audit: ${audit.totalVulnerabilities} wall(s) vulnerable to tunneling detected! (Highlighted in red)`,
+        ),
+        true,
+      );
+      for (const [idx, data] of audit.vulnerableSegments) {
+        print(
+          tr(
+            `  • Segmento #${idx}: vara a partir de ${data.minBreachSpeed.toFixed(1)} u/f (${data.breachCount} falhas)`,
+            `  • Segment #${idx}: tunnels starting at ${data.minBreachSpeed.toFixed(1)} u/f (${data.breachCount} fails)`,
+          ),
+          true,
+        );
+      }
+    } else {
+      setAuditHighlight(null);
+      print(tr("✅ Auditoria: Todas as paredes suportaram chutes fortes sem varar!", "✅ Audit: All walls held up to high-speed shots without tunneling!"));
+    }
+  };
+
+  function drawStress(ctx: CanvasRenderingContext2D, pg: Engine): void {
+    const s = stressDrag.current;
+    if (!s) {
+      if (auditHighlightRef.current && auditHighlightRef.current.size > 0) {
+        const px = 1 / ctx.getTransform().a;
+        ctx.save();
+        ctx.lineWidth = 6 * px;
+        ctx.strokeStyle = "rgba(255, 51, 68, 0.4)";
+        for (const wIdx of auditHighlightRef.current) {
+          const seg = pg.stadium.segments[wIdx];
+          if (!seg) continue;
+          ctx.beginPath();
+          if (seg.curved) {
+            ctx.arc(seg.cx, seg.cy, seg.radius, 0, Math.PI * 2);
+          } else {
+            ctx.moveTo(seg.x0, seg.y0);
+            ctx.lineTo(seg.x1, seg.y1);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      return;
+    }
+    const currentSpeed = stressSpeedRef.current;
+    drawStresserOverlay(
+      ctx,
+      pg.stadium,
+      s.origin,
+      s.end,
+      s.result,
+      stressPatternRef.current,
+      currentSpeed,
+      auditHighlightRef.current ?? undefined,
+    );
+  }
+
   const fmtTime = (t: number) => `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
   const pg = engineRef.current;
 
@@ -392,6 +537,59 @@ export function Playground({ mode }: { mode: PlayMode }) {
           <b class="blue">{hud.blue}</b>
           <span class="clock">{hud.overtime ? tr("prorrogação", "overtime") : fmtTime(hud.time)}</span>
         </span>
+        <div class="play-tool-group">
+          <button
+            class={`play-tool-btn ${tool === "launcher" ? "active" : ""}`}
+            title={tr("Lançador normal (trajetória única)", "Normal launcher (single trajectory)")}
+            onClick={() => playgroundTool.set("launcher")}
+          >
+            <Target size={13} />
+            <span>{tr("Lançador", "Launcher")}</span>
+          </button>
+          <button
+            class={`play-tool-btn ${tool === "stresser" ? "active stresser" : ""}`}
+            title={tr("Stresser de Parede (detecta se a bola vara a parede) · Tecla S", "Wall Stresser (checks if ball tunnels walls) · Key S")}
+            onClick={() => {
+              setStressHudClosed(false);
+              playgroundTool.set("stresser");
+            }}
+          >
+            <Zap size={13} />
+            <span>{tr("Stresser", "Stresser")}</span>
+          </button>
+        </div>
+        {tool === "stresser" && (
+          <>
+            <select
+              class="speed"
+              title={tr("Padrão de estresse", "Stress pattern")}
+              value={stressPattern}
+              onChange={(e) => setStressPattern((e.target as HTMLSelectElement).value as StressPattern)}
+            >
+              <option value="single">{tr("1 Linha (Simples)", "1 Line (Simple)")}</option>
+              <option value="fan">{tr("Leque (3 Raios)", "Fan (3 Rays)")}</option>
+              <option value="radial">{tr("Radial 360°", "Radial 360°")}</option>
+            </select>
+            <select
+              class="speed"
+              title={tr("Velocidade de teste", "Test speed")}
+              value={String(stressSpeed)}
+              onChange={(e) => setStressSpeed(Number((e.target as HTMLSelectElement).value))}
+            >
+              <option value="15">{tr("Normal (15 u/f)", "Normal (15 u/f)")}</option>
+              <option value="22">{tr("Forte (22 u/f)", "Hard (22 u/f)")}</option>
+              <option value="28">{tr("Extremo (28 u/f)", "Extreme (28 u/f)")}</option>
+              <option value="35">{tr("Máx/Bug (35 u/f)", "Max/Bug (35 u/f)")}</option>
+            </select>
+            <button
+              class={`icon-btn ${auditHighlight ? "on" : ""}`}
+              title={tr("Auditar todas as paredes (detecta vulnerabilidades em todo o mapa)", "Audit all stadium walls (finds vulnerabilities across the map)")}
+              onClick={runAuditAllWalls}
+            >
+              <ShieldAlert size={15} />
+            </button>
+          </>
+        )}
         <div class="grow" />
         <button class="icon-btn" title={hud.paused ? tr("Continuar (P)", "Resume (P)") : tr("Pausar (P)", "Pause (P)")} onClick={() => pg && togglePause(pg)}>
           {hud.paused ? <PlayIcon size={15} /> : <Pause size={15} />}
@@ -472,24 +670,111 @@ export function Playground({ mode }: { mode: PlayMode }) {
             (e.target as HTMLElement).setPointerCapture(e.pointerId);
             const ball = g.discs[0];
             const near = ball && Math.hypot(ball.x - p[0], ball.y - p[1]) < ball.radius + 12;
-            launch.current = { origin: near ? [ball.x, ball.y] : p, end: p };
+            const origin: [number, number] = near ? [ball.x, ball.y] : p;
+            if (tool === "launcher") {
+              launch.current = { origin, end: p };
+            } else {
+              setStressHudClosed(false);
+              const pg = engineRef.current;
+              if (!pg) return;
+              const res = simulateStressBurst(pg.stadium, origin, p, stressPattern, stressSpeed, ball);
+              stressDrag.current = { origin, end: p, result: res };
+              setStressResultHud(res);
+            }
           }}
           onPointerMove={(e) => {
             const p = toWorld(e);
-            if (p && launch.current) launch.current.end = p;
+            if (!p) return;
+            if (tool === "launcher" && launch.current) {
+              launch.current.end = p;
+            } else if (tool === "stresser" && stressDrag.current) {
+              const pg = engineRef.current;
+              if (!pg) return;
+              const origin = stressDrag.current.origin;
+              const ball = pg.game.discs[0];
+              const res = simulateStressBurst(pg.stadium, origin, p, stressPattern, stressSpeed, ball);
+              stressDrag.current.end = p;
+              stressDrag.current.result = res;
+              setStressResultHud(res);
+            }
           }}
           onPointerUp={() => {
-            const l = launch.current;
-            launch.current = null;
             const eng = engineRef.current;
-            if (!l || !eng) return;
-            const [vx, vy] = velocity(l);
-            eng.launch(l.origin[0], l.origin[1], vx, vy);
-            if (eng.paused) setRewind(eng.history.length - 1);
+            if (!eng) return;
+            if (tool === "launcher") {
+              const l = launch.current;
+              launch.current = null;
+              if (!l) return;
+              const [vx, vy] = velocity(l);
+              eng.launch(l.origin[0], l.origin[1], vx, vy);
+              if (eng.paused) setRewind(eng.history.length - 1);
+            } else {
+              const s = stressDrag.current;
+              stressDrag.current = null;
+              if (!s) return;
+              const res = s.result;
+              if (res.totalBreaches > 0) {
+                const breachTraj = res.trajectories.find((t) => t.breach) ?? res.trajectories[0];
+                const vx = Math.cos((breachTraj.angleDeg * Math.PI) / 180) * breachTraj.speed;
+                const vy = Math.sin((breachTraj.angleDeg * Math.PI) / 180) * breachTraj.speed;
+                eng.launch(s.origin[0], s.origin[1], vx, vy);
+                print(
+                  tr(
+                    `⚠️ Disparando chute que varou a parede: v=${breachTraj.speed.toFixed(1)} u/f (Segmento #${breachTraj.breach?.wallIndex ?? 0})`,
+                    `⚠️ Firing wall-tunneling shot: v=${breachTraj.speed.toFixed(1)} u/f (Segment #${breachTraj.breach?.wallIndex ?? 0})`,
+                  ),
+                  true,
+                );
+              } else if (res.trajectories[0]) {
+                const vx = Math.cos((res.trajectories[0].angleDeg * Math.PI) / 180) * res.trajectories[0].speed;
+                const vy = Math.sin((res.trajectories[0].angleDeg * Math.PI) / 180) * res.trajectories[0].speed;
+                eng.launch(s.origin[0], s.origin[1], vx, vy);
+                print(tr(`✅ Parede resistiu! Velocidade testada: ${stressSpeed.toFixed(1)} u/f`, `✅ Wall held! Speed tested: ${stressSpeed.toFixed(1)} u/f`));
+              }
+              if (eng.paused) setRewind(eng.history.length - 1);
+            }
           }}
         />
+        {tool === "stresser" && !stressHudClosed && (
+          <div class={`stresser-hud ${stressResultHud?.totalBreaches ? "breach" : ""}`}>
+            <div class="stresser-hud-title">
+              <Zap size={14} color={stressResultHud?.totalBreaches ? "#ff3344" : "#00f5d4"} />
+              <span>{tr("Stresser de Parede", "Wall Stresser")}</span>
+              <span class="stresser-badge">
+                {stressPattern === "single" ? tr("1 LINHA", "1 LINE") : stressPattern === "fan" ? tr("LEQUE", "FAN") : tr("RADIAL", "RADIAL")}
+              </span>
+              <button
+                class="stresser-hud-close"
+                title={tr("Fechar aviso", "Close notice")}
+                onClick={() => {
+                  setStressHudClosed(true);
+                  setStressResultHud(null);
+                }}
+              >
+                <X size={13} />
+              </button>
+            </div>
+            <div class="stresser-hud-desc">
+              {stressResultHud ? stressResultHud.summary : tr("Arraste em direção a uma parede para testar se a bola vara com chutes em alta velocidade.", "Drag towards a wall to test if the ball tunnels with high-speed shots.")}
+            </div>
+            {stressResultHud && stressResultHud.totalBreaches > 0 && (
+              <div class="stresser-hud-action">
+                {tr("Solte o mouse para disparar o chute que varou!", "Release mouse to fire the breaching shot live!")}
+              </div>
+            )}
+          </div>
+        )}
         {error && <div class="play-error">{tr("O mapa não carrega:", "Map failed to load:")} {error}</div>}
-        {settings.stats && <pre class="net-stats">{hud.stats}</pre>}
+        {settings.stats && (
+          <pre
+            class="net-stats"
+            style={{ pointerEvents: "auto", cursor: "pointer" }}
+            title={tr("Clique para fechar estatísticas de rede", "Click to close network stats")}
+            onClick={() => playSettings.update({ stats: false })}
+          >
+            {hud.stats}
+          </pre>
+        )}
         <div class="console">
           {lines.map((l) => (
             <div class={`line ${l.warn ? "warn" : ""}`} key={l.id}>

@@ -39,7 +39,7 @@ Escribe un texto y se convierte en segmentos sobre la cancha. La fuente propia, 
 
 ### Juega en el mapa sin salir del editor
 
-El playground ejecuta la física y el netcode de HaxBall dentro del navegador, sin servidor. **`/extrapolation` y `/lag` funcionan de verdad**, mostrando ping, frame confirmado y frame renderizado en pantalla. Pausa, avance cuadro a cuadro, cámara lenta, **rebobinado de 10 s**, lanzador de pelota con trayectoria prevista e segundo jugador local.
+El playground ejecuta la física y el netcode de HaxBall dentro del navegador, sin servidor. **`/extrapolation` y `/lag` funcionan de verdad**, mostrando ping, frame confirmado y frame renderizado en pantalla. Pausa, avance cuadro a cuadro, cámara lenta, **rebobinado de 10 s**, lanzador de pelota con trayectoria prevista, **stresser de pared** (para probar si el balón traspasa la pared a alta velocidad) e segundo jugador local.
 
 </td>
 </tr>

@@ -47,6 +47,8 @@ import {
 import { ed, prefs, select } from "../editor/state";
 import { fitView, zoomAt } from "../editor/tools";
 import { smartSelected, smartOf } from "../smart/smart";
+import { findItem } from "../doc/ops";
+import { playMode, playgroundTool, stressTargetSegment } from "../play/mode";
 
 export interface ContextMenuState {
   x: number;
@@ -217,6 +219,23 @@ export function ContextMenu({ menu, onClose }: { menu: ContextMenuState; onClose
             <Lock size={14} />
             <span class="label">{tr("Bloquear seleção", "Lock selection")}</span>
           </button>
+
+          {s.selection.some((r) => r.startsWith("segments:")) && (
+            <button
+              class="context-menu-item"
+              onClick={() => {
+                const segRef = s.selection.find((r) => r.startsWith("segments:"));
+                const it = segRef ? findItem(s.doc, segRef) : null;
+                if (it) stressTargetSegment.set(it.index);
+                playMode.set(playMode.get() ?? "split");
+                playgroundTool.set("stresser");
+                onClose();
+              }}
+            >
+              <Zap size={14} color="#ff3344" />
+              <span class="label">{tr("Estressar parede no Playground", "Stress wall in Playground")}</span>
+            </button>
+          )}
 
           <div class="context-menu-sep" />
 

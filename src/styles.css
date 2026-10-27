@@ -1362,6 +1362,109 @@ input.text {
 .playground.split .speed {
   max-width: 84px;
 }
+.play-tool-group {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+.play-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.play-tool-btn:hover {
+  color: var(--fg);
+  background: var(--panel-2);
+}
+.play-tool-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+.play-tool-btn.active.stresser {
+  background: #ff3344;
+  color: #fff;
+}
+.stresser-hud {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  max-width: 320px;
+  background: rgba(14, 18, 26, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11.5px;
+  color: var(--fg);
+  pointer-events: auto;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  animation: fadeIn 0.15s ease-out;
+}
+.stresser-hud.breach {
+  border-color: rgba(255, 51, 68, 0.7);
+  box-shadow: 0 0 16px rgba(255, 51, 68, 0.25);
+}
+.stresser-hud-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.stresser-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  margin-left: auto;
+}
+.stresser-hud-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+.stresser-hud-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--fg);
+}
+.stresser-hud-desc {
+  color: var(--muted);
+  line-height: 1.4;
+}
+.stresser-hud-action {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ff5566;
+  font-weight: 600;
+  font-size: 11px;
+}
 .console {
   position: absolute;
   left: 10px;

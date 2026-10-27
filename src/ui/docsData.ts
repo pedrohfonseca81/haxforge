@@ -664,18 +664,18 @@ export const DOC_ARTICLES: DocArticle[] = [
   {
     id: "playground",
     category: "advanced",
-    title: { pt: "Simulador de Física & Lançador de Trajetória", en: "Physics Simulator & Trajectory Launcher" },
+    title: { pt: "Simulador de Física, Lançador & Stresser de Parede", en: "Physics Simulator, Trajectory Launcher & Wall Stresser" },
     badge: { pt: "Simulação", en: "Simulation" },
     summary: {
-      pt: "Teste a jogabilidade do seu mapa em tempo real sem sair da aba, com física 100% fiel e previsão visual de trajetória.",
-      en: "Test stadium gameplay in real time directly in the browser, with identical physics and visual trajectory prediction.",
+      pt: "Teste a jogabilidade do seu mapa em tempo real sem sair da aba, com física 100% fiel, previsão de trajetória e stresser de parede contra varamentos.",
+      en: "Test stadium gameplay in real time directly in the browser, with identical physics, trajectory prediction, and wall stress testing against tunneling.",
     },
     media: {
       type: "video",
       src: "./docs/media/launcher.mp4",
       caption: {
-        pt: "Demonstração do lançador de trajetória: previsão exata de ricochetes na parede e no poste antes do chute.",
-        en: "Trajectory launcher showcase: exact deterministic bounce and rebound prediction before the shot.",
+        pt: "Demonstração do lançador de trajetória e stresser: previsão exata de ricochetes na parede e postes antes do chute.",
+        en: "Trajectory launcher and stresser showcase: exact deterministic bounce and rebound prediction before the shot.",
       },
     },
     sections: [
@@ -692,6 +692,13 @@ export const DOC_ARTICLES: DocArticle[] = [
         text: {
           pt: "O lançador permite mirar e testar chutes com linha de previsão determinística: mostra exatamente os ângulos de ricochete nas paredes, traves e postes antes mesmo do chute ser disparado.",
           en: "The ball launcher displays an exact deterministic future trajectory line, tracing wall bounces, post deflections, and final velocity before you even strike the ball.",
+        },
+      },
+      {
+        heading: { pt: "Stresser de Parede (Detecção de Varamento)", en: "Wall Stresser (Tunneling / Clipping Detection)" },
+        text: {
+          pt: "O Stresser de Parede (tecla S ou botão na barra) dispara rajadas de alta velocidade (15 a 35 u/frame) contra as paredes em múltiplos padrões: leque angular (50°), feixe de velocidades progressivas ou radial 360°. O motor detecta quando a bola vara a parede, marcando a falha em vermelho neon com indicação do ponto de impacto e permitindo disparar o chute que varou ao vivo. Você também pode clicar no botão de auditoria para escanear todas as paredes do estádio de uma só vez.",
+          en: "The Wall Stresser (key S or toolbar button) tests high-velocity bursts (15 to 35 u/frame) against walls across multiple patterns: angular fan (50°), progressive speed beam, or radial 360°. The engine detects wall tunneling, highlights failures in glowing red with exact impact markers, and lets you fire the breaching shot live. You can also click the audit button to scan all stadium walls at once.",
         },
       },
       {

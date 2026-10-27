@@ -39,7 +39,7 @@ Type any text and it turns into segments on the field. The built-in font, **Haxf
 
 ### Play the map without leaving the editor
 
-The playground runs HaxBall's exact physics and netcode right inside the browser, with no server. **`/extrapolation` and `/lag` actually work**, showing ping, confirmed frame, and rendered frame on screen. Pause, frame-by-frame step, slow motion, **10 s rewind**, ball launcher with predicted trajectory, and a local second player.
+The playground runs HaxBall's exact physics and netcode right inside the browser, with no server. **`/extrapolation` and `/lag` actually work**, showing ping, confirmed frame, and rendered frame on screen. Pause, frame-by-frame step, slow motion, **10 s rewind**, ball launcher with predicted trajectory, **wall stresser** (to test if the ball tunnels/clips walls at high velocity), and a local second player.
 
 </td>
 </tr>

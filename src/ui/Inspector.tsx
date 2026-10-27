@@ -3,7 +3,7 @@
 // default; editing writes on the object, and can be reset or pushed to the trait.
 import JSON5 from "json5";
 import { useEffect, useState } from "preact/hooks";
-import { BringToFront, SendToBack, Tags, Trash2, Copy, FlipHorizontal2, FlipVertical2, Grid2x2, Repeat, RotateCw } from "lucide-preact";
+import { BringToFront, SendToBack, Tags, Trash2, Copy, FlipHorizontal2, FlipVertical2, Grid2x2, Repeat, RotateCw, Zap } from "lucide-preact";
 import { smartSelected } from "../smart/smart";
 import { SmartPanel } from "./SmartPanel";
 import { BALL_FIELDS, effective, flagBits, flagNames, ITEM_FIELDS, ROOT_SECTIONS, traitsOf, type FieldDef, type Origin } from "../doc/fields";
@@ -15,6 +15,7 @@ import { resolve } from "../doc/resolve";
 import { inlineText } from "../doc/style";
 import { commit, ed, select, type EditorState } from "../editor/state";
 import { arraySelection, deleteSelection, duplicate, extractTrait, mirrorSelection, moveSelection, toast } from "../editor/actions";
+import { playMode, playgroundTool, stressTargetSegment } from "../play/mode";
 import { tr } from "../i18n";
 import { ColorInput, Field, FlagsInput, MIXED, NumberInput, Segmented, Select, TextInput, Toggle, VecInput, type Shown } from "./widgets";
 
@@ -180,16 +181,31 @@ function SegmentInfo({ s, index }: { s: EditorState; index: number }) {
     len = 2 * half * g.radius;
   }
   return (
-    <div class="info-row">
-      <span>{tr("Comprimento", "Length")}</span>
-      <b>{Math.round(len * 10) / 10}</b>
-      {g.curved && (
-        <>
-          <span>{tr("Raio", "Radius")}</span>
-          <b>{Math.round(g.radius * 10) / 10}</b>
-        </>
-      )}
-    </div>
+    <>
+      <div class="info-row">
+        <span>{tr("Comprimento", "Length")}</span>
+        <b>{Math.round(len * 10) / 10}</b>
+        {g.curved && (
+          <>
+            <span>{tr("Raio", "Radius")}</span>
+            <b>{Math.round(g.radius * 10) / 10}</b>
+          </>
+        )}
+      </div>
+      <button
+        class="btn small ghost full-width"
+        style={{ marginTop: "6px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+        title={tr("Abre o playground e dispara testes de estresse nesta parede para verificar se a bola vara", "Opens playground and stress-tests this wall to verify if ball tunnels")}
+        onClick={() => {
+          stressTargetSegment.set(index);
+          playMode.set(playMode.get() ?? "split");
+          playgroundTool.set("stresser");
+        }}
+      >
+        <Zap size={13} color="#ff3344" />
+        <span>{tr("Testar se vara a parede", "Test if ball tunnels")}</span>
+      </button>
+    </>
   );
 }
 

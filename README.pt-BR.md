@@ -39,7 +39,7 @@ Digite um texto e ele vira segmentos no campo. A fonte própria, **Haxforge Sans
 
 ### Jogue no mapa sem sair do editor
 
-O playground roda a física e o netcode do HaxBall dentro do navegador, sem servidor. **`/extrapolation` e `/lag` funcionam de verdade**, com ping, frame confirmado e renderizado na tela. Pausa, frame a frame, câmera lenta, **rewind de 10 s**, lançador de bola com trajetória prevista e segundo jogador local.
+O playground roda a física e o netcode do HaxBall dentro do navegador, sem servidor. **`/extrapolation` e `/lag` funcionam de verdade**, com ping, frame confirmado e renderizado na tela. Pausa, frame a frame, câmera lenta, **rewind de 10 s**, lançador de bola com trajetória prevista, **stresser de parede** (para testar se a bola vara a parede em alta velocidade) e segundo jogador local.
 
 </td>
 </tr>

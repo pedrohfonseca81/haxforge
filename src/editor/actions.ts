@@ -9,7 +9,7 @@ import { traitsOf } from "../doc/fields";
 import { roundFor } from "./geom";
 import { commit, ed, patch, prefs, redo, requestDraw, saveNow, select, undo, view, type ToolId } from "./state";
 import { fitView, setTool, zoomAt } from "./tools";
-import { playMode } from "../play/mode";
+import { playMode, playgroundTool } from "../play/mode";
 
 export { toast, toasts, type Toast } from "./toast";
 import { Store } from "../vendor/haxball/client/store";
@@ -562,6 +562,7 @@ export function commands(goHome: () => void): Command[] {
     { id: "lang", label: tr("Mudar idioma para Inglês (EN)", "Switch language to Portuguese (PT-BR)"), group: gView, run: toggleLang },
     { id: "play", label: tr("Jogar no mapa", "Play on map"), group: gPlay, keys: "Ctrl+Enter", run: () => playMode.set("full") },
     { id: "playSplit", label: tr("Jogar lado a lado (recarrega a cada edição)", "Play side-by-side (reloads on every edit)"), group: gPlay, keys: "Ctrl+Shift+Enter", run: () => playMode.set("split") },
+    { id: "wallStresser", label: tr("Stresser de Parede (verificar se a bola vara)", "Wall Stresser (test if ball tunnels walls)"), group: gPlay, run: () => { playgroundTool.set("stresser"); playMode.set(playMode.get() ?? "split"); } },
     { id: "export", label: tr("Exportar .hbs", "Export .hbs"), group: gFile, keys: "Ctrl+E", run: () => exportHbs(false) },
     { id: "exportClean", label: tr("Exportar .hbs limpo (sem metadados do editor)", "Export clean .hbs (without editor metadata)"), group: gFile, run: () => exportHbs(true) },
     { id: "copyHbs", label: tr("Copiar texto do .hbs", "Copy .hbs text"), group: gFile, run: () => void copyHbs() },
