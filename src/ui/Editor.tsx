@@ -30,6 +30,7 @@ import {
   Type,
   History,
   Globe,
+  CircleHelp,
 } from "lucide-preact";
 import { lang, toggleLang, tr } from "../i18n";
 import { VersionsDialog } from "./Versions";
@@ -44,7 +45,7 @@ import { ROLE_STYLE } from "../doc/bodies";
 import { playMode } from "../play/mode";
 import { traitsOf } from "../doc/fields";
 import { budget, LIMIT } from "../doc/resolve";
-import { goHome } from "../app";
+import { goHome, openDocs } from "../app";
 import { copyShareLink, optimizerOpen, commands, copyHbs, copySelection, cutSelection, deleteSelection, duplicate, exportHbs, moveSelection, nudge, paste, selectAll, TOOLS } from "../editor/actions";
 import { ed, editor, patch, prefs, redo, saveNow, select, undo, type EditorState, type ToolId } from "../editor/state";
 import { cancelTool, fitView, releaseSpace, setTool, toolKey, zoomAt } from "../editor/tools";
@@ -391,6 +392,9 @@ function TopBar({ s, onPalette }: { s: EditorState; onPalette: () => void }) {
       <div class="grow" />
       <button class="btn ghost small" title={tr("Mudar para inglês (EN)", "Mudar para português (PT-BR)")} onClick={toggleLang}>
         <Globe size={14} /> {l.toUpperCase()}
+      </button>
+      <button class="icon-btn" title={tr("Documentação", "Documentation")} onClick={() => openDocs()}>
+        <CircleHelp size={16} />
       </button>
       <AgentButton />
       <button class="btn ghost" title={tr("Paleta de comandos (Ctrl+K)", "Command palette (Ctrl+K)")} onClick={onPalette}>

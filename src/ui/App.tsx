@@ -1,6 +1,6 @@
 // Screens, file drops anywhere on the page, and toasts.
 import { useEffect, useState } from "preact/hooks";
-import { importAsProject, readFile, screen } from "../app";
+import { importAsProject, openDocs, readFile, screen } from "../app";
 import { decodeMap, sharedCode } from "../persist/share";
 import { toast } from "../editor/toast";
 import { lang, tr } from "../i18n";
@@ -9,12 +9,27 @@ import { toasts } from "../editor/actions";
 import { useStore } from "../vendor/haxball/client/store";
 import { Editor } from "./Editor";
 import { Home } from "./Home";
+import { Docs } from "./Docs";
 
 export function App() {
   useStore(lang);
   const sc = useStore(screen);
   const ts = useStore(toasts);
   const [dropping, setDropping] = useState(false);
+
+  // Direct docs navigation via #docs or #docs/topic
+  useEffect(() => {
+    const handleHash = () => {
+      const h = location.hash;
+      if (h.startsWith("#docs")) {
+        const topic = h.replace(/^#docs\/?/, "") || undefined;
+        openDocs(topic);
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
 
   // A share link (#map=...) opens as a new project.
   useEffect(() => {
@@ -57,7 +72,7 @@ export function App() {
 
   return (
     <>
-      {sc.name === "home" ? <Home /> : <Editor />}
+      {sc.name === "home" ? <Home /> : sc.name === "docs" ? <Docs initialTopic={sc.topic} /> : <Editor />}
       {dropping && (
         <div class="drop-hint">
           {sc.name === "editor"

@@ -1,8 +1,8 @@
 // The projects screen: start blank, from a template, a file or pasted text,
 // or reopen a project saved in this browser.
 import { useEffect, useRef, useState } from "preact/hooks";
-import { ClipboardPaste, Copy, Globe, LandPlot, Plus, Trash2, Upload } from "lucide-preact";
-import { createBlank, createField, duplicateProject, importAsProject, openProject, readFile } from "../app";
+import { ClipboardPaste, Copy, Globe, LandPlot, Plus, Trash2, Upload, CircleHelp } from "lucide-preact";
+import { createBlank, createField, duplicateProject, importAsProject, openDocs, openProject, readFile } from "../app";
 import { lang, locale, toggleLang, tr } from "../i18n";
 import { TEMPLATES } from "../templates";
 import { importText, type Doc } from "../doc/model";
@@ -74,6 +74,9 @@ export function Home() {
           </button>
           <button class="btn ghost" title={tr("Mudar para inglês (EN)", "Mudar para português (PT-BR)")} onClick={toggleLang}>
             <Globe size={15} /> {l.toUpperCase()}
+          </button>
+          <button class="btn ghost icon-btn" title={tr("Documentação", "Documentation")} onClick={() => openDocs()}>
+            <CircleHelp size={16} />
           </button>
           <input
             ref={file}

@@ -9,7 +9,7 @@
 **Editor de mapas do HaxBall, visual e moderno, que roda no navegador.**<br>
 Crie do zero, gere um campo em segundos ou abra um `.hbs` e edite sem perder uma vírgula da formatação.
 
-[**Abrir o editor →**](https://pedrohfonseca81.github.io/haxforge/) · [**Comunidade no Discord →**](https://discord.gg/ZTu7zwgvhm)
+[**Abrir o editor →**](https://pedrohfonseca81.github.io/haxforge/) · [**Documentação →**](https://pedrohfonseca81.github.io/haxforge/#docs) · [**Comunidade no Discord →**](https://discord.gg/ZTu7zwgvhm)
 
 [![Discord](https://img.shields.io/badge/Discord-Entrar%20na%20Comunidade-5865F2?logo=discord&logoColor=white)](https://discord.gg/ZTu7zwgvhm)
 [![Deploy](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml/badge.svg)](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml)

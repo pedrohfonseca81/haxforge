@@ -9,15 +9,43 @@ import { playMode } from "./play/mode";
 import { getProject, newProjectId, putProject } from "./persist/db";
 import { Store } from "./vendor/haxball/client/store";
 
-export type Screen = { name: "home" } | { name: "editor" };
+export type Screen = { name: "home" } | { name: "editor" } | { name: "docs"; topic?: string };
 export const screen = new Store<Screen>({ name: "home" });
 
+let prevScreenBeforeDocs: "home" | "editor" = "home";
 
 function show(): void {
   playMode.set(null);
   // The canvas fits the map once it knows its size.
   view.needsFit = true;
   screen.set({ name: "editor" });
+  if (location.hash.startsWith("#docs")) {
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+}
+
+export function openDocs(topic?: string): void {
+  playMode.set(null);
+  const current = screen.get().name;
+  if (current !== "docs") {
+    prevScreenBeforeDocs = current === "editor" ? "editor" : "home";
+  }
+  screen.set({ name: "docs", topic });
+  const hash = topic ? `#docs/${topic}` : "#docs";
+  if (location.hash !== hash) {
+    history.pushState(null, "", hash);
+  }
+}
+
+export function closeDocs(): void {
+  if (prevScreenBeforeDocs === "editor" && editor.get()) {
+    show();
+  } else {
+    screen.set({ name: "home" });
+  }
+  if (location.hash.startsWith("#docs")) {
+    history.replaceState(null, "", location.pathname + location.search);
+  }
 }
 
 export function createBlank(): void {
@@ -73,6 +101,9 @@ export async function goHome(): Promise<void> {
   // Leave the editor screen first, so nothing on it reacts to the map going away.
   screen.set({ name: "home" });
   editor.set(null);
+  if (location.hash.startsWith("#docs")) {
+    history.replaceState(null, "", location.pathname + location.search);
+  }
 }
 
 export async function readFile(file: File): Promise<void> {

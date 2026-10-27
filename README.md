@@ -9,7 +9,7 @@
 **A modern, visual HaxBall stadium editor that runs in your browser.**<br>
 Build from scratch, generate a field in seconds, or open any `.hbs` file and edit it without losing a single comma of formatting.
 
-[**Open the editor →**](https://pedrohfonseca81.github.io/haxforge/) · [**Discord Community →**](https://discord.gg/ZTu7zwgvhm)
+[**Open the editor →**](https://pedrohfonseca81.github.io/haxforge/) · [**Documentation →**](https://pedrohfonseca81.github.io/haxforge/#docs) · [**Discord Community →**](https://discord.gg/ZTu7zwgvhm)
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/ZTu7zwgvhm)
 [![Deploy](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml/badge.svg)](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml)

@@ -9,7 +9,7 @@
 **Editor visual y moderno de mapas de HaxBall que corre en el navegador.**<br>
 Crea desde cero, genera una cancha en segundos o abre un `.hbs` y edítalo sin perder ni una coma del formato original.
 
-[**Abrir el editor →**](https://pedrohfonseca81.github.io/haxforge/) · [**Comunidad en Discord →**](https://discord.gg/ZTu7zwgvhm)
+[**Abrir el editor →**](https://pedrohfonseca81.github.io/haxforge/) · [**Documentación →**](https://pedrohfonseca81.github.io/haxforge/#docs) · [**Comunidad en Discord →**](https://discord.gg/ZTu7zwgvhm)
 
 [![Discord](https://img.shields.io/badge/Discord-Unirse%20a%20la%20Comunidad-5865F2?logo=discord&logoColor=white)](https://discord.gg/ZTu7zwgvhm)
 [![Deploy](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml/badge.svg)](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml)
