@@ -2,6 +2,7 @@
 // check floods the space each body can reach (walls inflated by its radius,
 // with the same collision tests as the physics) to find gaps it slips through.
 import { compileStadium } from "../vendor/kickr/shared/stadium";
+import { lang, tr } from "../i18n";
 import { bodies, canCollide, type Body } from "./bodies";
 import { LIST_KEYS, toJson, type Doc } from "./model";
 import { deleteRefs, obj, refOf, setField, type Ref } from "./ops";
@@ -22,10 +23,15 @@ export interface Issue {
   fix?: { label: string; apply: (doc: Doc) => Doc };
 }
 
-const cache = new WeakMap<Doc, Issue[]>();
+let cache = new WeakMap<Doc, Issue[]>();
+let cacheLang = lang.get();
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 export function lint(doc: Doc): Issue[] {
+  if (cacheLang !== lang.get()) {
+    cache = new WeakMap<Doc, Issue[]>();
+    cacheLang = lang.get();
+  }
   const hit = cache.get(doc);
   if (hit) return hit;
   const geo = resolve(doc);
@@ -35,13 +41,19 @@ export function lint(doc: Doc): Issue[] {
   // ---- Broken objects and limits ----
   for (const [r, msg] of geo.errors) out.push({ id: `err:${r}`, level: "error", text: msg, refs: [r] });
   for (const b of budget(doc)) {
-    if (b.used > LIMIT) out.push({ id: `limit:${b.key}`, level: "error", text: `${b.label}: ${b.used} de ${LIMIT}. O HaxBall não carrega mais que ${LIMIT}.`, refs: [] });
+    if (b.used > LIMIT)
+      out.push({
+        id: `limit:${b.key}`,
+        level: "error",
+        text: tr(`${b.label}: ${b.used} de ${LIMIT}. O HaxBall não carrega mais que ${LIMIT}.`, `${b.label}: ${b.used} of ${LIMIT}. HaxBall cannot load more than ${LIMIT}.`),
+        refs: [],
+      });
   }
   if (!geo.errors.size) {
     try {
       compileStadium(toJson(doc, true));
     } catch (e) {
-      out.push({ id: "compile", level: "error", text: `O HaxBall recusaria o mapa: ${(e as Error).message}`, refs: [] });
+      out.push({ id: "compile", level: "error", text: tr(`O HaxBall recusaria o mapa: ${(e as Error).message}`, `HaxBall would reject the map: ${(e as Error).message}`), refs: [] });
     }
   }
 
@@ -51,7 +63,7 @@ export function lint(doc: Doc): Issue[] {
     if (!s) return;
     const r = ref("segments", i);
     if (s.v0 === s.v1 || (s.x0 === s.x1 && s.y0 === s.y1)) {
-      out.push({ id: `zero:${r}`, level: "warn", text: "Segmento de comprimento zero.", refs: [r], at: [s.x0, s.y0], fix: { label: "Apagar", apply: (d) => deleteRefs(d, [r]) } });
+      out.push({ id: `zero:${r}`, level: "warn", text: tr("Segmento de comprimento zero.", "Zero-length segment."), refs: [r], at: [s.x0, s.y0], fix: { label: tr("Apagar", "Delete"), apply: (d) => deleteRefs(d, [r]) } });
       return;
     }
     // The same segment drawn the other way round has its curve and bias negated.
@@ -61,11 +73,25 @@ export function lint(doc: Doc): Issue[] {
     const key = JSON.stringify({ ...raw, v0: Math.min(s.v0, s.v1), v1: Math.max(s.v0, s.v1), curve: flip ? neg(raw.curve) : raw.curve, bias: flip ? neg(raw.bias) : raw.bias });
     const first = seen.get(key);
     if (first !== undefined) {
-      out.push({ id: `dup:${r}`, level: "warn", text: `Segmento repetido (igual ao #${first}).`, refs: [r], at: [(s.x0 + s.x1) / 2, (s.y0 + s.y1) / 2], fix: { label: "Apagar a cópia", apply: (d) => deleteRefs(d, [r]) } });
+      out.push({
+        id: `dup:${r}`,
+        level: "warn",
+        text: tr(`Segmento repetido (igual ao #${first}).`, `Duplicate segment (same as #${first}).`),
+        refs: [r],
+        at: [(s.x0 + s.x1) / 2, (s.y0 + s.y1) / 2],
+        fix: { label: tr("Apagar a cópia", "Delete copy"), apply: (d) => deleteRefs(d, [r]) },
+      });
     } else seen.set(key, i);
     const invisible = !s.vis || s.color === -1;
     if (invisible && (s.cMask === 0 || s.cGroup === 0)) {
-      out.push({ id: `noop:${r}`, level: "info", text: "Segmento invisível que não colide com nada.", refs: [r], at: [(s.x0 + s.x1) / 2, (s.y0 + s.y1) / 2], fix: { label: "Apagar", apply: (d) => deleteRefs(d, [r]) } });
+      out.push({
+        id: `noop:${r}`,
+        level: "info",
+        text: tr("Segmento invisível que não colide com nada.", "Invisible segment that collides with nothing."),
+        refs: [r],
+        at: [(s.x0 + s.x1) / 2, (s.y0 + s.y1) / 2],
+        fix: { label: tr("Apagar", "Delete"), apply: (d) => deleteRefs(d, [r]) },
+      });
     }
   });
 
@@ -78,19 +104,19 @@ export function lint(doc: Doc): Issue[] {
     out.push({
       id: "loose",
       level: "info",
-      text: `${loose.length} vértice(s) solto(s): sem segmento, mas colidem como pontos invisíveis.`,
+      text: tr(`${loose.length} vértice(s) solto(s): sem segmento, mas colidem como pontos invisíveis.`, `${loose.length} loose vertex(es): no segment, but still collide as invisible points.`),
       refs: loose,
-      fix: { label: "Apagar", apply: (d) => deleteRefs(d, loose) },
+      fix: { label: tr("Apagar", "Delete"), apply: (d) => deleteRefs(d, loose) },
     });
   }
 
   // ---- Goals ----
-  if (doc.lists.goals.length === 0) out.push({ id: "nogoals", level: "info", text: "O mapa não tem gols: ninguém marca.", refs: [] });
+  if (doc.lists.goals.length === 0) out.push({ id: "nogoals", level: "info", text: tr("O mapa não tem gols: ninguém marca.", "The map has no goals: nobody can score."), refs: [] });
   const { width, height } = geo.stadium;
   geo.goals.forEach((g, i) => {
     if (!g) return;
     const r = ref("goals", i);
-    if (g.p0[0] === g.p1[0] && g.p0[1] === g.p1[1]) out.push({ id: `goal0:${r}`, level: "error", text: "Gol de comprimento zero.", refs: [r], at: g.p0 });
+    if (g.p0[0] === g.p1[0] && g.p0[1] === g.p1[1]) out.push({ id: `goal0:${r}`, level: "error", text: tr("Gol de comprimento zero.", "Zero-length goal."), refs: [r], at: g.p0 });
   });
 
   // ---- Out of the camera's reach ----
@@ -101,7 +127,15 @@ export function lint(doc: Doc): Issue[] {
       if (Math.max(Math.abs(s.x0), Math.abs(s.x1)) > width + 1 || Math.max(Math.abs(s.y0), Math.abs(s.y1)) > height + 1) outside.push(ref("segments", i));
     });
     if (outside.length) {
-      out.push({ id: "outside", level: "info", text: `${outside.length} segmento(s) visível(is) além da área da câmera (largura/altura): pode ser que ninguém veja.`, refs: outside });
+      out.push({
+        id: "outside",
+        level: "info",
+        text: tr(
+          `${outside.length} segmento(s) visível(is) além da área da câmera (largura/altura): pode ser que ninguém veja.`,
+          `${outside.length} visible segment(s) outside the camera bounds (width/height): players might not see them.`,
+        ),
+        refs: outside,
+      });
     }
   }
 
@@ -116,10 +150,10 @@ export function lint(doc: Doc): Issue[] {
     out.push({
       id: "traits",
       level: "info",
-      text: `Trait(s) sem uso: ${unused.join(", ")}.`,
+      text: tr(`Trait(s) sem uso: ${unused.join(", ")}.`, `Unused trait(s): ${unused.join(", ")}.`),
       refs: [],
       fix: {
-        label: "Remover",
+        label: tr("Remover", "Remove"),
         apply: (d) => {
           const t = { ...traitsOf(d.fields) };
           for (const n of unused) delete t[n];
@@ -134,7 +168,14 @@ export function lint(doc: Doc): Issue[] {
     for (const b of bodies(doc, geo)) {
       for (const p of b.starts) {
         const wall = insideWall(doc, geo, b, p);
-        if (wall) out.push({ id: `start:${b.key}:${p}`, level: "warn", text: `${cap(b.label)} começa dentro de ${wall.text}.`, refs: wall.ref ? [wall.ref] : [], at: p });
+        if (wall)
+          out.push({
+            id: `start:${b.key}:${p}`,
+            level: "warn",
+            text: tr(`${cap(b.label)} começa dentro de ${wall.text}.`, `${cap(b.label)} starts inside ${wall.text}.`),
+            refs: wall.ref ? [wall.ref] : [],
+            at: p,
+          });
       }
       const esc = escape(geo, b);
       if (esc) {
@@ -143,8 +184,14 @@ export function lint(doc: Doc): Issue[] {
           level: b.key === "ball" ? "error" : "warn",
           text:
             esc.kind === "nowalls"
-              ? `Nada segura ${b.label}: não há paredes que colidam com ${b.key === "ball" ? "ela" : "ele"}.`
-              : `${cap(b.label)} consegue sair do mapa por um vão${b.key === "ball" ? "" : " (planos costumam fechar a área dos jogadores)"}.`,
+              ? tr(
+                  `Nada segura ${b.label}: não há paredes que colidam com ${b.key === "ball" ? "ela" : "ele"}.`,
+                  `Nothing stops ${b.label}: there are no walls that collide with ${b.key === "ball" ? "it" : "them"}.`,
+                )
+              : tr(
+                  `${cap(b.label)} consegue sair do mapa por um vão${b.key === "ball" ? "" : " (planos costumam fechar a área dos jogadores)"}.`,
+                  `${cap(b.label)} can escape the map through a gap${b.key === "ball" ? "" : " (planes usually enclose the player area)"}.`,
+                ),
           refs: [],
           at: esc.at,
           path: esc.path,
@@ -189,15 +236,15 @@ function insideWall(doc: Doc, geo: Geo, b: Body, p: Vec): { text: string; ref?: 
   const r = b.radius;
   for (let i = 0; i < geo.segments.length; i++) {
     const s = geo.segments[i];
-    if (s && canCollide(b, s) && segmentHits(s, p[0], p[1], r)) return { text: `um segmento (#${i})`, ref: refOf("segments", doc.lists.segments[i].id) };
+    if (s && canCollide(b, s) && segmentHits(s, p[0], p[1], r)) return { text: tr(`um segmento (#${i})`, `a segment (#${i})`), ref: refOf("segments", doc.lists.segments[i].id) };
   }
   for (let i = 0; i < geo.vertexes.length; i++) {
     const v = geo.vertexes[i];
-    if (v && canCollide(b, v) && Math.hypot(v.x - p[0], v.y - p[1]) < r) return { text: `um vértice (#${i})`, ref: refOf("vertexes", doc.lists.vertexes[i].id) };
+    if (v && canCollide(b, v) && Math.hypot(v.x - p[0], v.y - p[1]) < r) return { text: tr(`um vértice (#${i})`, `a vertex (#${i})`), ref: refOf("vertexes", doc.lists.vertexes[i].id) };
   }
   for (let i = 0; i < geo.planes.length; i++) {
     const pl = geo.planes[i];
-    if (pl && canCollide(b, pl) && pl.dist - (pl.nx * p[0] + pl.ny * p[1]) + r > 0) return { text: `um plano (#${i})`, ref: refOf("planes", doc.lists.planes[i].id) };
+    if (pl && canCollide(b, pl) && pl.dist - (pl.nx * p[0] + pl.ny * p[1]) + r > 0) return { text: tr(`um plano (#${i})`, `a plane (#${i})`), ref: refOf("planes", doc.lists.planes[i].id) };
   }
   return null;
 }

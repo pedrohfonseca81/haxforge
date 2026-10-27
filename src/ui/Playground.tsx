@@ -11,6 +11,7 @@ import { render as renderGame, VIEW_MODES, type Camera } from "../vendor/kickr/c
 import { Input, isOvertime } from "../vendor/kickr/shared/game";
 import { DEFAULT_COLORS, TICK_MS } from "../vendor/kickr/shared/protocol";
 import { compileStadium, type Stadium } from "../vendor/kickr/shared/stadium";
+import { lang, tr } from "../i18n";
 import { Store, useStore } from "../vendor/kickr/client/store";
 
 
@@ -64,14 +65,26 @@ function newEngine(stadium: Stadium): Engine {
 }
 
 const SPEEDS = [1, 0.5, 0.25, 0.1];
-const HELP = [
-  "/extrapolation <ms>  renderiza à frente (-200 a 1000)",
-  "/lag <ms>  latência artificial de ida e volta (0 a 2000)",
-  "/speed <x>  velocidade do tempo (ex.: 0.25)",
-  "/reset  recomeça a partida",
-  "/p2  liga/desliga o segundo jogador (blue: WASD + Shift esquerdo/Q)",
-  "P pausa · . avança um frame · 0-7 zoom · arraste no campo para lançar a bola",
-];
+function getHelp(): string[] {
+  return tr(
+    [
+      "/extrapolation <ms>  renderiza à frente (-200 a 1000)",
+      "/lag <ms>  latência artificial de ida e volta (0 a 2000)",
+      "/speed <x>  velocidade do tempo (ex.: 0.25)",
+      "/reset  recomeça a partida",
+      "/p2  liga/desliga o segundo jogador (blue: WASD + Shift esquerdo/Q)",
+      "P pausa · . avança um frame · 0-7 zoom · arraste no campo para lançar a bola",
+    ],
+    [
+      "/extrapolation <ms>  render ahead (-200 to 1000)",
+      "/lag <ms>  artificial round-trip latency (0 to 2000)",
+      "/speed <x>  time speed (e.g. 0.25)",
+      "/reset  restart match",
+      "/p2  toggle second player (blue: WASD + Left Shift/Q)",
+      "P pause · . step one frame · 0-7 zoom · drag on field to launch the ball",
+    ],
+  );
+}
 
 interface Line {
   id: number;
@@ -81,6 +94,7 @@ interface Line {
 let lineId = 0;
 
 export function Playground({ mode }: { mode: PlayMode }) {
+  useStore(lang);
   const settings = useStore(playSettings);
   const root = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -186,9 +200,9 @@ export function Playground({ mode }: { mode: PlayMode }) {
             `ping         ${Math.round(pg.rtt)} ms`,
             `lag (/lag)   ${pg.lag} ms`,
             `extrapol.    ${pg.extrapolation} ms`,
-            `confirmado   F=${pg.sim.confirmed.frame}`,
-            `renderizado  F=${(pg.sim.confirmed.frame + ahead).toFixed(1)} (+${ahead.toFixed(1)})`,
-            `servidor     F=${pg.game.frame}`,
+            `${tr("confirmado ", "confirmed  ")}  F=${pg.sim.confirmed.frame}`,
+            `${tr("renderizado", "rendered   ")}  F=${(pg.sim.confirmed.frame + ahead).toFixed(1)} (+${ahead.toFixed(1)})`,
+            `${tr("servidor   ", "server     ")}  F=${pg.game.frame}`,
             `fps          ${Math.round(fps)}`,
           ].join("\n"),
         });
@@ -278,7 +292,7 @@ export function Playground({ mode }: { mode: PlayMode }) {
           pg.setLag(n);
           playSettings.update({ lag: pg.lag });
         }
-        return print(`lag: ${pg.lag} ms (metade em cada sentido)`);
+        return print(tr(`lag: ${pg.lag} ms (metade em cada sentido)`, `lag: ${pg.lag} ms (half each way)`));
       case "speed":
         if (!pg) return;
         if (Number.isFinite(n) && n > 0) {
@@ -286,18 +300,18 @@ export function Playground({ mode }: { mode: PlayMode }) {
           lastSpeed.current = pg.speed;
           setRewind(null);
         }
-        return print(`velocidade: ${pg.speed}x`);
+        return print(tr(`velocidade: ${pg.speed}x`, `speed: ${pg.speed}x`));
       case "reset":
         pg?.restart();
         setRewind(null);
-        return print("partida recomeçada");
+        return print(tr("partida recomeçada", "match restarted"));
       case "p2":
         playSettings.update({ twoPlayers: !playSettings.get().twoPlayers });
         return restartEngine();
       case "help":
-        return HELP.forEach((h) => print(h));
+        return getHelp().forEach((h) => print(h));
       default:
-        return print(`comando desconhecido: /${name} (veja /help)`, true);
+        return print(tr(`comando desconhecido: /${name} (veja /help)`, `unknown command: /${name} (see /help)`), true);
     }
   };
 
@@ -311,7 +325,11 @@ export function Playground({ mode }: { mode: PlayMode }) {
     engineRef.current = pg;
     shared = { engine: pg, doc: s.doc };
     setRewind(null);
-    print(pg.twoPlayers ? "2 jogadores: red = setas + X/Espaço (ou . / Ctrl direito) · blue = WASD + Shift esquerdo/Q" : "1 jogador: setas/WASD + X/Espaço");
+    print(
+      pg.twoPlayers
+        ? tr("2 jogadores: red = setas + X/Espaço (ou . / Ctrl direito) · blue = WASD + Shift esquerdo/Q", "2 players: red = arrows + X/Space (or . / Right Ctrl) · blue = WASD + Left Shift/Q")
+        : tr("1 jogador: setas/WASD + X/Espaço", "1 player: arrows/WASD + X/Space"),
+    );
   };
 
   // ---- Ball launcher ------------------------------------------------------------------------
@@ -372,18 +390,18 @@ export function Playground({ mode }: { mode: PlayMode }) {
           <b class="red">{hud.red}</b>
           <span>–</span>
           <b class="blue">{hud.blue}</b>
-          <span class="clock">{hud.overtime ? "prorrogação" : fmtTime(hud.time)}</span>
+          <span class="clock">{hud.overtime ? tr("prorrogação", "overtime") : fmtTime(hud.time)}</span>
         </span>
         <div class="grow" />
-        <button class="icon-btn" title={hud.paused ? "Continuar (P)" : "Pausar (P)"} onClick={() => pg && togglePause(pg)}>
+        <button class="icon-btn" title={hud.paused ? tr("Continuar (P)", "Resume (P)") : tr("Pausar (P)", "Pause (P)")} onClick={() => pg && togglePause(pg)}>
           {hud.paused ? <PlayIcon size={15} /> : <Pause size={15} />}
         </button>
-        <button class="icon-btn" title="Avançar um frame (.)" disabled={!hud.paused} onClick={() => pg?.stepFrame()}>
+        <button class="icon-btn" title={tr("Avançar um frame (.)", "Step one frame (.)")} disabled={!hud.paused} onClick={() => pg?.stepFrame()}>
           <StepForward size={15} />
         </button>
         <select
           class="speed"
-          title="Velocidade do tempo"
+          title={tr("Velocidade do tempo", "Time speed")}
           value={String(hud.paused ? lastSpeed.current : hud.speed)}
           onChange={(e) => {
             const v = Number((e.target as HTMLSelectElement).value);
@@ -395,31 +413,31 @@ export function Playground({ mode }: { mode: PlayMode }) {
             <option value={String(s)}>{s}x</option>
           ))}
         </select>
-        <select class="speed" title="Zoom (teclas 0-7, como no HaxBall)" value={String(settings.viewMode)} onChange={(e) => playSettings.update({ viewMode: Number((e.target as HTMLSelectElement).value) })}>
+        <select class="speed" title={tr("Zoom (teclas 0-7, como no HaxBall)", "Zoom (keys 0-7, like HaxBall)")} value={String(settings.viewMode)} onChange={(e) => playSettings.update({ viewMode: Number((e.target as HTMLSelectElement).value) })}>
           {VIEW_MODES.map(([m, label]) => (
             <option value={String(m)}>{label}</option>
           ))}
         </select>
-        <button class="icon-btn" title="Recomeçar (/reset)" onClick={() => run("/reset")}>
+        <button class="icon-btn" title={tr("Recomeçar (/reset)", "Restart (/reset)")} onClick={() => run("/reset")}>
           <RotateCcw size={15} />
         </button>
-        <button class={`icon-btn ${settings.twoPlayers ? "on" : ""}`} title="Segundo jogador (/p2)" onClick={() => run("/p2")}>
+        <button class={`icon-btn ${settings.twoPlayers ? "on" : ""}`} title={tr("Segundo jogador (/p2)", "Second player (/p2)")} onClick={() => run("/p2")}>
           <Users size={15} />
         </button>
-        <button class={`icon-btn ${settings.stats ? "on" : ""}`} title="Estatísticas de rede" onClick={() => playSettings.update({ stats: !settings.stats })}>
+        <button class={`icon-btn ${settings.stats ? "on" : ""}`} title={tr("Estatísticas de rede", "Network stats")} onClick={() => playSettings.update({ stats: !settings.stats })}>
           <Activity size={15} />
         </button>
         <span class="sep" />
         {mode === "full" ? (
-          <button class="icon-btn" title="Lado a lado com o editor" onClick={() => playMode.set("split")}>
+          <button class="icon-btn" title={tr("Lado a lado com o editor", "Side-by-side with editor")} onClick={() => playMode.set("split")}>
             <Columns2 size={15} />
           </button>
         ) : (
-          <button class="icon-btn" title="Tela cheia" onClick={() => playMode.set("full")}>
+          <button class="icon-btn" title={tr("Tela cheia", "Full screen")} onClick={() => playMode.set("full")}>
             <Maximize2 size={15} />
           </button>
         )}
-        <button class="icon-btn" title={mode === "full" ? "Voltar ao editor (Esc)" : "Fechar"} onClick={() => playMode.set(null)}>
+        <button class="icon-btn" title={mode === "full" ? tr("Voltar ao editor (Esc)", "Back to editor (Esc)") : tr("Fechar", "Close")} onClick={() => playMode.set(null)}>
           <X size={15} />
         </button>
       </div>
@@ -431,7 +449,7 @@ export function Playground({ mode }: { mode: PlayMode }) {
             min={0}
             max={Math.max(0, hud.history - 1)}
             value={rewind ?? hud.history - 1}
-            title="Voltar no tempo (até 10 s)"
+            title={tr("Voltar no tempo (até 10 s)", "Rewind in time (up to 10 s)")}
             onInput={(e) => {
               const i = Number((e.target as HTMLInputElement).value);
               setRewind(i);
@@ -439,7 +457,7 @@ export function Playground({ mode }: { mode: PlayMode }) {
             }}
           />
           <span class="muted small">{((((rewind ?? hud.history - 1) - (hud.history - 1)) * TICK_MS) / 1000).toFixed(2)} s</span>
-          <span class="muted small hide-narrow">pausado · . avança um frame · P continua</span>
+          <span class="muted small hide-narrow">{tr("pausado · . avança um frame · P continua", "paused · . step one frame · P resume")}</span>
         </div>
       )}
       <div class="play-stage">
@@ -470,7 +488,7 @@ export function Playground({ mode }: { mode: PlayMode }) {
             if (eng.paused) setRewind(eng.history.length - 1);
           }}
         />
-        {error && <div class="play-error">O mapa não carrega: {error}</div>}
+        {error && <div class="play-error">{tr("O mapa não carrega:", "Map failed to load:")} {error}</div>}
         {settings.stats && <pre class="net-stats">{hud.stats}</pre>}
         <div class="console">
           {lines.map((l) => (
@@ -482,7 +500,7 @@ export function Playground({ mode }: { mode: PlayMode }) {
             ref={cmdInput}
             class="cmd"
             value={cmd}
-            placeholder="Enter para comandos: /extrapolation 100, /lag 150, /help"
+            placeholder={tr("Enter para comandos: /extrapolation 100, /lag 150, /help", "Enter for commands: /extrapolation 100, /lag 150, /help")}
             onInput={(e) => setCmd((e.target as HTMLInputElement).value)}
             onKeyDown={(e) => {
               e.stopPropagation();

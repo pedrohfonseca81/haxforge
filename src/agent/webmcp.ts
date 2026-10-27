@@ -5,6 +5,7 @@
 // used navigator.modelContext, with unregisterTool(name). Both are supported.
 import { Store } from "../vendor/kickr/client/store";
 import { toast } from "../editor/toast";
+import { lang, tr } from "../i18n";
 import { isToolError, TOOLS, type AgentTool } from "./tools";
 
 interface ModelContextLike {
@@ -51,10 +52,10 @@ async function execute(tool: AgentTool, input: object, api: "document" | "naviga
     result = await tool.run((input ?? {}) as never);
   } catch (e) {
     ok = false;
-    result = { error: isToolError(e) ? e.message : `Erro inesperado: ${(e as Error).message}` };
+    result = { error: isToolError(e) ? e.message : tr(`Erro inesperado: ${(e as Error).message}`, `Unexpected error: ${(e as Error).message}`) };
   }
   agentLog.set([{ id, tool: tool.name, title: tool.title, input: short(input), ok, result: short(result), at: Date.now() }, ...agentLog.get()].slice(0, 100));
-  if (!tool.readOnly) toast(ok ? `Agente: ${tool.title}` : `Agente: ${tool.title} falhou`, ok ? "info" : "error");
+  if (!tool.readOnly) toast(ok ? `${tr("Agente", "Agent")}: ${tool.title}` : `${tr("Agente", "Agent")}: ${tool.title} ${tr("falhou", "failed")}`, ok ? "info" : "error");
   const text = typeof result === "string" ? result : JSON.stringify(result);
   // The current draft returns any value to the agent; the older one expected MCP content.
   return api === "document" ? result : { content: [{ type: "text", text }], ...(ok ? {} : { isError: true }) };
@@ -93,6 +94,9 @@ export function startAgents(): void {
     on = localStorage.getItem(PREF) !== "0";
   } catch {}
   enableAgents(on);
+  lang.subscribe(() => {
+    if (agentStatus.get().enabled) enableAgents(true);
+  });
 }
 
 // Lets tests and other in-page code call a tool the way an agent would.

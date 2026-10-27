@@ -16,11 +16,12 @@ import { compileStadium } from "../vendor/kickr/shared/stadium";
 import { listProjects } from "../persist/db";
 import { ensureFont, GOOGLE_FONTS, STROKE_FONTS } from "../smart/fonts";
 import { createBlank, createField, importAsProject, openProject } from "../app";
+import { tr } from "../i18n";
 
 export interface AgentTool {
   name: string;
-  title: string;
-  description: string;
+  readonly title: string;
+  readonly description: string;
   inputSchema: JsonObject;
   readOnly?: boolean;
   run: (input: JsonObject) => Promise<Json> | Json;
@@ -30,21 +31,21 @@ class ToolError extends Error {}
 
 function open() {
   const s = editor.get();
-  if (!s) throw new ToolError("Nenhum mapa aberto. Use list_projects + open_project, new_map ou import_hbs.");
+  if (!s) throw new ToolError(tr("Nenhum mapa aberto. Use list_projects + open_project, new_map ou import_hbs.", "No map open. Use list_projects + open_project, new_map, or import_hbs."));
   return s;
 }
 
 const LIST_ENUM = [...LIST_KEYS];
 const listOf = (v: Json): ListKey => {
-  if (typeof v !== "string" || !(LIST_KEYS as readonly string[]).includes(v)) throw new ToolError(`"list" deve ser um de: ${LIST_KEYS.join(", ")}`);
+  if (typeof v !== "string" || !(LIST_KEYS as readonly string[]).includes(v)) throw new ToolError(tr(`"list" deve ser um de: ${LIST_KEYS.join(", ")}`, `"list" must be one of: ${LIST_KEYS.join(", ")}`));
   return v as ListKey;
 };
 const refsAt = (list: ListKey, indices: Json): Ref[] => {
-  if (!Array.isArray(indices)) throw new ToolError('"indices" deve ser uma lista de números');
+  if (!Array.isArray(indices)) throw new ToolError(tr('"indices" deve ser uma lista de números', '"indices" must be an array of numbers'));
   const items = ed().doc.lists[list];
   return indices.map((i) => {
     const it = items[i as number];
-    if (!it) throw new ToolError(`${list}[${String(i)}] não existe (há ${items.length})`);
+    if (!it) throw new ToolError(tr(`${list}[${String(i)}] não existe (há ${items.length})`, `${list}[${String(i)}] does not exist (there are ${items.length})`));
     return refOf(list, it.id);
   });
 };
@@ -78,59 +79,93 @@ function summary(): JsonObject {
     smartObjects: doc.smart.map((sm) => ({
       id: sm.id,
       kind: sm.kind,
-      params: sm.kind === "shape" ? { ...sm.params, svg: `(${String(sm.params.svg ?? "").length} caracteres)` } : sm.params,
+      params: sm.kind === "shape" ? { ...sm.params, svg: `(${String(sm.params.svg ?? "").length} ${tr("caracteres", "chars")})` } : sm.params,
       cost: smartCost(sm),
     })),
     problems: { errors: issues.filter((i) => i.level === "error").length, warnings: issues.filter((i) => i.level === "warn").length, info: issues.filter((i) => i.level === "info").length },
-    coordinates: "Origem no centro do campo; x para a direita, y para BAIXO (como na tela). Ângulos de curva em graus; positivo curva para a esquerda de quem vai de v0 para v1.",
+    coordinates: tr(
+      "Origem no centro do campo; x para a direita, y para BAIXO (como na tela). Ângulos de curva em graus; positivo curva para a esquerda de quem vai de v0 para v1.",
+      "Origin at the center of the field; x to the right, y DOWN (screen coordinates). Curve angles in degrees; positive curves to the left when going from v0 to v1.",
+    ),
   };
 }
 
 const PROPS_SCHEMA = { type: "object", description: "Propriedades do .hbs (ex.: color \"FFFFFF\", cMask [\"ball\"], bCoef, vis, trait, curve, bias). null remove a propriedade.", additionalProperties: true };
 const point = { type: "array", items: { type: "number" }, minItems: 2, maxItems: 3 };
 
+const t = (
+  name: string,
+  title: [string, string],
+  description: [string, string],
+  inputSchema: JsonObject,
+  run: (input: JsonObject) => Promise<Json> | Json,
+  readOnly?: boolean,
+): AgentTool => ({
+  name,
+  get title() {
+    return tr(title[0], title[1]);
+  },
+  get description() {
+    return tr(description[0], description[1]);
+  },
+  inputSchema,
+  readOnly,
+  run,
+});
+
 export const TOOLS: AgentTool[] = [
   // ---- Reading ----
-  {
-    name: "get_map",
-    title: "Resumo do mapa",
-    description: "Resumo do mapa aberto: nome, tamanho, fundo, físicas, traits, quantidade de cada tipo de objeto e orçamento (limite de 255 por tipo do HaxBall), objetos inteligentes com seus parâmetros e contagem de problemas. Comece por aqui.",
-    inputSchema: { type: "object", properties: {} },
-    readOnly: true,
-    run: () => summary(),
-  },
-  {
-    name: "get_objects",
-    title: "Listar objetos",
-    description: "Lista os objetos de um tipo (vertexes, segments, goals, discs, planes, joints, redSpawnPoints, blueSpawnPoints) com seu índice e valor exatamente como no .hbs. Segmentos referenciam vértices por índice (v0, v1); joints referenciam discos (d0, d1; o índice 0 é a bola quando ballPhysics não é \"disc0\").",
-    inputSchema: { type: "object", properties: { list: { type: "string", enum: LIST_ENUM }, offset: { type: "integer", minimum: 0 }, limit: { type: "integer", minimum: 1, maximum: 255 } }, required: ["list"] },
-    readOnly: true,
-    run: (i) => {
+  t(
+    "get_map",
+    ["Resumo do mapa", "Map summary"],
+    [
+      "Resumo do mapa aberto: nome, tamanho, fundo, físicas, traits, quantidade de cada tipo de objeto e orçamento (limite de 255 por tipo do HaxBall), objetos inteligentes com seus parâmetros e contagem de problemas. Comece por aqui.",
+      "Summary of the open map: name, size, background, physics, traits, count of each object type and budget (HaxBall's 255 limit per type), smart objects with parameters, and issue counts. Start here.",
+    ],
+    { type: "object", properties: {} },
+    () => summary(),
+    true,
+  ),
+  t(
+    "get_objects",
+    ["Listar objetos", "List objects"],
+    [
+      "Lista os objetos de um tipo (vertexes, segments, goals, discs, planes, joints, redSpawnPoints, blueSpawnPoints) com seu índice e valor exatamente como no .hbs. Segmentos referenciam vértices por índice (v0, v1); joints referenciam discos (d0, d1; o índice 0 é a bola quando ballPhysics não é \"disc0\").",
+      "Lists objects of a given type (vertexes, segments, goals, discs, planes, joints, redSpawnPoints, blueSpawnPoints) with their index and exact .hbs value. Segments reference vertices by index (v0, v1); joints reference discs (d0, d1; index 0 is the ball when ballPhysics is not \"disc0\").",
+    ],
+    { type: "object", properties: { list: { type: "string", enum: LIST_ENUM }, offset: { type: "integer", minimum: 0 }, limit: { type: "integer", minimum: 1, maximum: 255 } }, required: ["list"] },
+    (i) => {
       const list = listOf(i.list);
       const items = open().doc.lists[list];
       const offset = (i.offset as number) ?? 0;
       const limit = (i.limit as number) ?? 100;
       return { total: items.length, items: items.slice(offset, offset + limit).map((it, k) => ({ index: offset + k, value: it.v })) };
     },
-  },
-  {
-    name: "get_hbs",
-    title: "Texto do .hbs",
-    description: "O arquivo .hbs completo do mapa aberto (JSON5), como seria exportado. clean=true tira os metadados do editor.",
-    inputSchema: { type: "object", properties: { clean: { type: "boolean" } } },
-    readOnly: true,
-    run: (i) => {
+    true,
+  ),
+  t(
+    "get_hbs",
+    ["Texto do .hbs", ".hbs text"],
+    [
+      "O arquivo .hbs completo do mapa aberto (JSON5), como seria exportado. clean=true tira os metadados do editor.",
+      "Full .hbs file of the open map (JSON5), as it would be exported. clean=true strips editor metadata.",
+    ],
+    { type: "object", properties: { clean: { type: "boolean" } } },
+    (i) => {
       const s = open();
       return exportText(s.doc, s.source, { clean: !!i.clean });
     },
-  },
-  {
-    name: "lint_map",
-    title: "Problemas do mapa",
-    description: "Problemas encontrados no mapa: vãos por onde a bola ou os jogadores escapam (com o caminho), corpos dentro de paredes, objetos quebrados, limite de 255, segmentos repetidos ou inúteis, traits sem uso.",
-    inputSchema: { type: "object", properties: {} },
-    readOnly: true,
-    run: () => {
+    true,
+  ),
+  t(
+    "lint_map",
+    ["Problemas do mapa", "Map issues"],
+    [
+      "Problemas encontrados no mapa: vãos por onde a bola ou os jogadores escapam (com o caminho), corpos dentro de paredes, objetos quebrados, limite de 255, segmentos repetidos ou inúteis, traits sem uso.",
+      "Issues found in the map: gaps where the ball or players can escape (with escape path), bodies inside walls, broken objects, 255 limit exceeded, duplicate or no-op segments, unused traits.",
+    ],
+    { type: "object", properties: {} },
+    () => {
       const doc = open().doc;
       return lint(doc).map((is) => ({
         level: is.level,
@@ -141,24 +176,27 @@ export const TOOLS: AgentTool[] = [
         ...(is.path && { path: is.path.filter((_, k, a) => k % Math.max(1, Math.floor(a.length / 12)) === 0) }),
       }));
     },
-  },
-  {
-    name: "simulate_shot",
-    title: "Simular chute",
-    description: "Simula a bola com a física real do HaxBall (sem jogadores se mexendo): coloca a bola em (x, y) com velocidade (vx, vy) por até N frames (60 por segundo) e diz por onde passou, onde parou e se entrou em algum gol. Bom para testar quiques, traves e cantos.",
-    inputSchema: {
+    true,
+  ),
+  t(
+    "simulate_shot",
+    ["Simular chute", "Simulate shot"],
+    [
+      "Simula a bola com a física real do HaxBall (sem jogadores se mexendo): coloca a bola em (x, y) com velocidade (vx, vy) por até N frames (60 por segundo) e diz por onde passou, onde parou e se entrou em algum gol. Bom para testar quiques, traves e cantos.",
+      "Simulates the ball with real HaxBall physics (without moving players): places the ball at (x, y) with velocity (vx, vy) for up to N frames (60 per second) and returns its path, where it stopped, and whether it scored. Useful for testing bounces, posts, and corners.",
+    ],
+    {
       type: "object",
       properties: { x: { type: "number" }, y: { type: "number" }, vx: { type: "number" }, vy: { type: "number" }, frames: { type: "integer", minimum: 1, maximum: 1200 } },
       required: ["x", "y", "vx", "vy"],
     },
-    readOnly: true,
-    run: (i) => {
+    (i) => {
       const doc = open().doc;
       let stadium;
       try {
         stadium = compileStadium(toJson(doc, true));
       } catch (e) {
-        throw new ToolError(`O mapa não carrega no HaxBall: ${(e as Error).message}`);
+        throw new ToolError(tr(`O mapa não carrega no HaxBall: ${(e as Error).message}`, `Map cannot load in HaxBall: ${(e as Error).message}`));
       }
       const pg = new Playground(stadium, false);
       pg.speed = 0;
@@ -174,21 +212,24 @@ export const TOOLS: AgentTool[] = [
         pg.stepFrame();
         const b = pg.game.discs[0];
         if (frame % 10 === 0) path.push([Math.round(b.x * 10) / 10, Math.round(b.y * 10) / 10]);
-        if (pg.game.red > before[0]) goal = "gol para o red (bola no gol blue)";
-        if (pg.game.blue > before[1]) goal = "gol para o blue (bola no gol red)";
+        if (pg.game.red > before[0]) goal = tr("gol para o red (bola no gol blue)", "goal for red (ball in blue goal)");
+        if (pg.game.blue > before[1]) goal = tr("gol para o blue (bola no gol red)", "goal for blue (ball in red goal)");
         if (goal) break;
       }
       const b = pg.game.discs[0];
       return { goal, frames: frame + 1, end: { x: b.x, y: b.y, vx: b.vx, vy: b.vy }, path };
     },
-  },
-  {
-    name: "render_map",
-    title: "Imagem do mapa",
-    description: "Uma imagem PNG do mapa (como o HaxBall desenha), em data URL base64.",
-    inputSchema: { type: "object", properties: { width: { type: "integer", minimum: 200, maximum: 1600 } } },
-    readOnly: true,
-    run: async (i) => {
+    true,
+  ),
+  t(
+    "render_map",
+    ["Imagem do mapa", "Render map image"],
+    [
+      "Uma imagem PNG do mapa (como o HaxBall desenha), em data URL base64.",
+      "A PNG image of the map (as drawn by HaxBall), as a base64 data URL.",
+    ],
+    { type: "object", properties: { width: { type: "integer", minimum: 200, maximum: 1600 } } },
+    async (i) => {
       const doc = open().doc;
       const { drawThumb } = await import("../editor/thumb");
       const c = document.createElement("canvas");
@@ -197,33 +238,37 @@ export const TOOLS: AgentTool[] = [
       drawThumb(c, doc);
       return { image: c.toDataURL("image/png") };
     },
-  },
-  {
-    name: "list_projects",
-    title: "Projetos salvos",
-    description: "Os mapas salvos neste navegador.",
-    inputSchema: { type: "object", properties: {} },
-    readOnly: true,
-    run: async () => (await listProjects()).map((p) => ({ id: p.id, name: p.name, updatedAt: new Date(p.updatedAt).toISOString() })),
-  },
+    true,
+  ),
+  t(
+    "list_projects",
+    ["Projetos salvos", "Saved projects"],
+    ["Os mapas salvos neste navegador.", "Maps saved in this browser."],
+    { type: "object", properties: {} },
+    async () => (await listProjects()).map((p) => ({ id: p.id, name: p.name, updatedAt: new Date(p.updatedAt).toISOString() })),
+    true,
+  ),
 
   // ---- Projects ----
-  {
-    name: "open_project",
-    title: "Abrir projeto",
-    description: "Abre um projeto salvo no editor (veja list_projects).",
-    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
-    run: async (i) => {
+  t(
+    "open_project",
+    ["Abrir projeto", "Open project"],
+    ["Abre um projeto salvo no editor (veja list_projects).", "Opens a saved project in the editor (see list_projects)."],
+    { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    async (i) => {
       await openProject(String(i.id));
       return summary();
     },
-  },
-  {
-    name: "new_map",
-    title: "Novo mapa",
-    description: "Cria um projeto novo e abre no editor: em branco, ou com o gerador de campo (template classic, big, futsal, real ou hockey).",
-    inputSchema: { type: "object", properties: { template: { type: "string", enum: ["blank", ...Object.keys(TEMPLATES)] }, name: { type: "string" } } },
-    run: (i) => {
+  ),
+  t(
+    "new_map",
+    ["Novo mapa", "New map"],
+    [
+      "Cria um projeto novo e abre no editor: em branco, ou com o gerador de campo (template classic, big, futsal, real ou hockey).",
+      "Creates a new project and opens it in the editor: blank, or with the field generator (template classic, big, futsal, real, or hockey).",
+    ],
+    { type: "object", properties: { template: { type: "string", enum: ["blank", ...Object.keys(TEMPLATES)] }, name: { type: "string" } } },
+    (i) => {
       const t = (i.template as string) ?? "blank";
       if (t === "blank") createBlank();
       else {
@@ -235,25 +280,28 @@ export const TOOLS: AgentTool[] = [
       if (typeof i.name === "string") commit(setField(ed().doc, "name", i.name));
       return summary();
     },
-  },
-  {
-    name: "import_hbs",
-    title: "Importar .hbs",
-    description: "Abre o texto de um .hbs (JSON5) como um projeto novo.",
-    inputSchema: { type: "object", properties: { text: { type: "string" } }, required: ["text"] },
-    run: (i) => {
-      if (!importAsProject(String(i.text), "texto")) throw new ToolError("Não consegui ler esse .hbs.");
+  ),
+  t(
+    "import_hbs",
+    ["Importar .hbs", "Import .hbs"],
+    ["Abre o texto de um .hbs (JSON5) como um projeto novo.", "Opens .hbs text (JSON5) as a new project."],
+    { type: "object", properties: { text: { type: "string" } }, required: ["text"] },
+    (i) => {
+      if (!importAsProject(String(i.text), tr("texto", "text"))) throw new ToolError(tr("Não consegui ler esse .hbs.", "Could not parse that .hbs."));
       return summary();
     },
-  },
+  ),
 
   // ---- Editing ----
-  {
-    name: "set_map_properties",
-    title: "Propriedades do mapa",
-    description: "Altera campos do estádio: name, width, height, spawnDistance, maxViewWidth, cameraFollow, kickOffReset, canBeStored, bg (objeto, mesclado), playerPhysics (objeto, mesclado), ballPhysics (objeto mesclado ou \"disc0\"), traits (objeto, mesclado por nome). null remove o campo.",
-    inputSchema: { type: "object", properties: { properties: { type: "object", additionalProperties: true } }, required: ["properties"] },
-    run: (i) => {
+  t(
+    "set_map_properties",
+    ["Propriedades do mapa", "Set map properties"],
+    [
+      "Altera campos do estádio: name, width, height, spawnDistance, maxViewWidth, cameraFollow, kickOffReset, canBeStored, bg (objeto, mesclado), playerPhysics (objeto, mesclado), ballPhysics (objeto mesclado ou \"disc0\"), traits (objeto, mesclado por nome). null remove o campo.",
+      "Updates stadium fields: name, width, height, spawnDistance, maxViewWidth, cameraFollow, kickOffReset, canBeStored, bg (merged object), playerPhysics (merged object), ballPhysics (merged object or \"disc0\"), traits (merged by name). null removes the field.",
+    ],
+    { type: "object", properties: { properties: { type: "object", additionalProperties: true } }, required: ["properties"] },
+    (i) => {
       let doc = open().doc;
       for (const [k, v] of Object.entries(obj(i.properties))) {
         const cur = doc.fields[k];
@@ -263,17 +311,20 @@ export const TOOLS: AgentTool[] = [
       commit(doc);
       return summary();
     },
-  },
-  {
-    name: "draw_path",
-    title: "Desenhar linha",
-    description: "Desenha uma sequência de segmentos ligados pelos pontos dados ([x, y] ou [x, y, curva] onde a curva em graus vale para o trecho que chega naquele ponto). closed=true fecha o contorno. properties vai em cada segmento (ex.: { color: \"FFFFFF\", cMask: [] } para linha decorativa; { cMask: [\"ball\"], vis: false } para parede invisível só da bola). vertexProperties vai nos vértices (vértices também colidem como pontos; use cMask: [] em decoração).",
-    inputSchema: {
+  ),
+  t(
+    "draw_path",
+    ["Desenhar linha", "Draw path"],
+    [
+      "Desenha uma sequência de segmentos ligados pelos pontos dados ([x, y] ou [x, y, curva] onde a curva em graus vale para o trecho que chega naquele ponto). closed=true fecha o contorno. properties vai em cada segmento (ex.: { color: \"FFFFFF\", cMask: [] } para linha decorativa; { cMask: [\"ball\"], vis: false } para parede invisível só da bola). vertexProperties vai nos vértices (vértices também colidem como pontos; use cMask: [] em decoração).",
+      "Draws a sequence of connected segments through the given points ([x, y] or [x, y, curve] where curve in degrees applies to the segment reaching that point). closed=true closes the loop. properties are applied to each segment (e.g. { color: \"FFFFFF\", cMask: [] } for decorative lines; { cMask: [\"ball\"], vis: false } for invisible ball-only walls). vertexProperties are applied to vertices (vertices also collide as points; use cMask: [] for decoration).",
+    ],
+    {
       type: "object",
       properties: { points: { type: "array", items: point, minItems: 2 }, closed: { type: "boolean" }, properties: PROPS_SCHEMA, vertexProperties: PROPS_SCHEMA },
       required: ["points"],
     },
-    run: (i) => {
+    (i) => {
       const pts = (i.points as number[][]).map((p) => p as [number, number, number?]);
       const b = new Builder();
       const props = obj(i.properties ?? {});
@@ -282,13 +333,16 @@ export const TOOLS: AgentTool[] = [
       for (let k = 1; k < seq.length; k++) b.segment(seq[k - 1] as Pt, seq[k] as Pt, seq[k][2] ?? 0, props, vprops);
       return insertClip(b);
     },
-  },
-  {
-    name: "add_objects",
-    title: "Adicionar objetos",
-    description: "Adiciona objetos no formato do .hbs. vertexes [{x, y, ...}], segments [{v0, v1, ...}] com índices de vértices JÁ existentes no mapa (os vértices adicionados nesta mesma chamada vêm depois dos atuais), discs [{pos:[x,y], radius, color, invMass, ...}], goals [{p0, p1, team: \"red\"|\"blue\"}], planes [{normal:[x,y], dist}], joints [{d0, d1, ...}], redSpawnPoints/blueSpawnPoints [[x,y]]. Retorna os índices criados.",
-    inputSchema: { type: "object", properties: Object.fromEntries(LIST_KEYS.map((l) => [l, { type: "array" }])) },
-    run: (i) => {
+  ),
+  t(
+    "add_objects",
+    ["Adicionar objetos", "Add objects"],
+    [
+      "Adiciona objetos no formato do .hbs. vertexes [{x, y, ...}], segments [{v0, v1, ...}] com índices de vértices JÁ existentes no mapa (os vértices adicionados nesta mesma chamada vêm depois dos atuais), discs [{pos:[x,y], radius, color, invMass, ...}], goals [{p0, p1, team: \"red\"|\"blue\"}], planes [{normal:[x,y], dist}], joints [{d0, d1, ...}], redSpawnPoints/blueSpawnPoints [[x,y]]. Retorna os índices criados.",
+      "Adds objects in .hbs format. vertexes [{x, y, ...}], segments [{v0, v1, ...}] using existing vertex indices (vertices added in the same call are appended after current ones), discs [{pos:[x,y], radius, color, invMass, ...}], goals [{p0, p1, team: \"red\"|\"blue\"}], planes [{normal:[x,y], dist}], joints [{d0, d1, ...}], redSpawnPoints/blueSpawnPoints [[x,y]]. Returns created indices.",
+    ],
+    { type: "object", properties: Object.fromEntries(LIST_KEYS.map((l) => [l, { type: "array" }])) },
+    (i) => {
       let doc = open().doc;
       const refs: Ref[] = [];
       for (const list of LIST_KEYS) {
@@ -301,13 +355,16 @@ export const TOOLS: AgentTool[] = [
       commit(doc, refs);
       return { created: indicesOf(refs), problems: lint(ed().doc).filter((x) => x.level === "error").map((x) => x.text) };
     },
-  },
-  {
-    name: "update_objects",
-    title: "Alterar objetos",
-    description: "Altera propriedades de objetos de um tipo pelos índices (null remove a propriedade, voltando ao trait ou ao padrão do HaxBall). Ex.: { list: \"segments\", indices: [3, 4], properties: { curve: 60, color: \"FF0000\" } }.",
-    inputSchema: { type: "object", properties: { list: { type: "string", enum: LIST_ENUM }, indices: { type: "array", items: { type: "integer" } }, properties: PROPS_SCHEMA }, required: ["list", "indices", "properties"] },
-    run: (i) => {
+  ),
+  t(
+    "update_objects",
+    ["Alterar objetos", "Update objects"],
+    [
+      "Altera propriedades de objetos de um tipo pelos índices (null remove a propriedade, voltando ao trait ou ao padrão do HaxBall). Ex.: { list: \"segments\", indices: [3, 4], properties: { curve: 60, color: \"FF0000\" } }.",
+      "Updates properties of objects of a given type by index (null removes the property, falling back to its trait or HaxBall's default). E.g.: { list: \"segments\", indices: [3, 4], properties: { curve: 60, color: \"FF0000\" } }.",
+    ],
+    { type: "object", properties: { list: { type: "string", enum: LIST_ENUM }, indices: { type: "array", items: { type: "integer" } }, properties: PROPS_SCHEMA }, required: ["list", "indices", "properties"] },
+    (i) => {
       const list = listOf(i.list);
       const refs = refsAt(list, i.indices);
       const ids = refs.map((r) => Number(r.split(":")[1]));
@@ -326,25 +383,31 @@ export const TOOLS: AgentTool[] = [
       );
       return { updated: refs.length };
     },
-  },
-  {
-    name: "delete_objects",
-    title: "Apagar objetos",
-    description: "Apaga objetos de um tipo pelos índices. Os índices dos outros são renumerados (segmentos e joints continuam ligados); apagar um vértice apaga os segmentos dele.",
-    inputSchema: { type: "object", properties: { list: { type: "string", enum: LIST_ENUM }, indices: { type: "array", items: { type: "integer" } } }, required: ["list", "indices"] },
-    run: (i) => {
+  ),
+  t(
+    "delete_objects",
+    ["Apagar objetos", "Delete objects"],
+    [
+      "Apaga objetos de um tipo pelos índices. Os índices dos outros são renumerados (segmentos e joints continuam ligados); apagar um vértice apaga os segmentos dele.",
+      "Deletes objects of a given type by index. Remaining indices are remapped automatically (segments and joints stay connected); deleting a vertex also deletes its segments.",
+    ],
+    { type: "object", properties: { list: { type: "string", enum: LIST_ENUM }, indices: { type: "array", items: { type: "integer" } } }, required: ["list", "indices"] },
+    (i) => {
       const list = listOf(i.list);
       const before = LIST_KEYS.map((l) => open().doc.lists[l].length);
       commit(deleteRefs(open().doc, refsAt(list, i.indices)), []);
       const after = LIST_KEYS.map((l) => ed().doc.lists[l].length);
       return { removed: Object.fromEntries(LIST_KEYS.map((l, k) => [l, before[k] - after[k]]).filter(([, n]) => n)) };
     },
-  },
-  {
-    name: "add_text",
-    title: "Letreiro",
-    description: `Escreve um texto no mapa com segmentos (objeto inteligente, reeditável). Parâmetros: text (\\n quebra linha), x, y (centro), size (altura das maiúsculas), angle (graus, anti-horário), bend (curvatura em graus), spacing, lineHeight, align (left|center|right), color, bold, solid (none = decorativo, ball, all), font: vazio = Haxforge Sans (traço, a mais barata); "stroke:<id>" = traço único (${STROKE_FONTS.map(([id]) => id).join(", ")}); "google:<id>" = contorno do Google Fonts (${GOOGLE_FONTS.map(([id]) => id).join(", ")}), mais caro.`,
-    inputSchema: {
+  ),
+  t(
+    "add_text",
+    ["Letreiro", "Add banner text"],
+    [
+      `Escreve um texto no mapa com segmentos (objeto inteligente, reeditável). Parâmetros: text (\\n quebra linha), x, y (centro), size (altura das maiúsculas), angle (graus, anti-horário), bend (curvatura em graus), spacing, lineHeight, align (left|center|right), color, bold, solid (none = decorativo, ball, all), font: vazio = Haxforge Sans (traço, a mais barata); "stroke:<id>" = traço único (${STROKE_FONTS.map(([id]) => id).join(", ")}); "google:<id>" = contorno do Google Fonts (${GOOGLE_FONTS.map(([id]) => id).join(", ")}), mais caro.`,
+      `Writes banner text on the map using segments (re-editable smart object). Parameters: text (\\n breaks lines), x, y (center), size (capital height), angle (degrees, counter-clockwise), bend (arc curvature in degrees), spacing, lineHeight, align (left|center|right), color, bold, solid (none = decorative, ball, all), font: empty = Haxforge Sans (stroke, cheapest); "stroke:<id>" = single-stroke (${STROKE_FONTS.map(([id]) => id).join(", ")}); "google:<id>" = Google Fonts outline (${GOOGLE_FONTS.map(([id]) => id).join(", ")}), more expensive.`,
+    ],
+    {
       type: "object",
       properties: {
         text: { type: "string" },
@@ -363,19 +426,22 @@ export const TOOLS: AgentTool[] = [
       },
       required: ["text"],
     },
-    run: async (i) => {
+    async (i) => {
       if (typeof i.font === "string") await ensureFont(i.font);
       const made = createSmart(open().doc, "text", i);
       commit(made.doc, refsOf(made.smart.items));
       return { id: made.smart.id, cost: smartCost(made.smart) };
     },
-  },
-  {
-    name: "generate_field",
-    title: "Gerar campo",
-    description: `Cria (ou ajusta, se já existir) o campo gerado: paredes da bola, gols, traves, redes, barreira do kickoff, planos dos jogadores, áreas e linhas, e também largura, altura, spawn e fundo do mapa. template: ${Object.keys(TEMPLATES).join(", ")}. Outros parâmetros (todos opcionais): width, height (metades do campo), goal (metade da boca do gol), depth, post, net (curve|box), corner, kickoff, spawn, inset (gols para dentro, hockey), marginX, marginY, bg (grass|hockey|none), lines (bg|segments), lineColor, netColor, area (none|futsal|real), areaDepth, areaWidth, smallDepth, smallWidth, spot, arc, bounce.`,
-    inputSchema: { type: "object", properties: { template: { type: "string", enum: Object.keys(TEMPLATES) } }, additionalProperties: true },
-    run: (i): Json => {
+  ),
+  t(
+    "generate_field",
+    ["Gerar campo", "Generate field"],
+    [
+      `Cria (ou ajusta, se já existir) o campo gerado: paredes da bola, gols, traves, redes, barreira do kickoff, planos dos jogadores, áreas e linhas, e também largura, altura, spawn e fundo do mapa. template: ${Object.keys(TEMPLATES).join(", ")}. Outros parâmetros (todos opcionais): width, height (metades do campo), goal (metade da boca do gol), depth, post, net (curve|box), corner, kickoff, spawn, inset (gols para dentro, hockey), marginX, marginY, bg (grass|hockey|none), lines (bg|segments), lineColor, netColor, area (none|futsal|real), areaDepth, areaWidth, smallDepth, smallWidth, spot, arc, bounce.`,
+      `Creates (or updates if already present) the generated field: ball walls, goals, posts, nets, kickoff barrier, player planes, penalty areas and markings, plus map width, height, spawn, and background. template: ${Object.keys(TEMPLATES).join(", ")}. Optional parameters: width, height (field half-sizes), goal (half goal mouth), depth, post, net (curve|box), corner, kickoff, spawn, inset (inset goals, hockey), marginX, marginY, bg (grass|hockey|none), lines (bg|segments), lineColor, netColor, area (none|futsal|real), areaDepth, areaWidth, smallDepth, smallWidth, spot, arc, bounce.`,
+    ],
+    { type: "object", properties: { template: { type: "string", enum: Object.keys(TEMPLATES) } }, additionalProperties: true },
+    (i): Json => {
       const doc = open().doc;
       const existing = doc.smart.find((x) => x.kind === "field");
       if (existing) {
@@ -387,107 +453,125 @@ export const TOOLS: AgentTool[] = [
       commit(made.doc, refsOf(made.smart.items));
       return { id: made.smart.id, created: true, problems: lint(ed().doc).filter((x) => x.level !== "info").map((x) => x.text) };
     },
-  },
-  {
-    name: "update_smart_object",
-    title: "Ajustar objeto inteligente",
-    description: "Muda parâmetros de um objeto inteligente (veja smartObjects em get_map): letreiro, campo, padrão, desenho, espelho ou repetição. Os parâmetros são mesclados e o objeto é refeito no lugar.",
-    inputSchema: { type: "object", properties: { id: { type: "string" }, params: { type: "object", additionalProperties: true } }, required: ["id", "params"] },
-    run: async (i) => {
+  ),
+  t(
+    "update_smart_object",
+    ["Ajustar objeto inteligente", "Update smart object"],
+    [
+      "Muda parâmetros de um objeto inteligente (veja smartObjects em get_map): letreiro, campo, padrão, desenho, espelho ou repetição. Os parâmetros são mesclados e o objeto é refeito no lugar.",
+      "Updates parameters of a smart object (see smartObjects in get_map): banner text, field, pattern, shape, mirror, or repeat. Parameters are merged and the object is regenerated in place.",
+    ],
+    { type: "object", properties: { id: { type: "string" }, params: { type: "object", additionalProperties: true } }, required: ["id", "params"] },
+    async (i) => {
       const doc = open().doc;
       const sm = doc.smart.find((x) => x.id === i.id);
-      if (!sm) throw new ToolError(`Não existe objeto inteligente "${String(i.id)}"`);
+      if (!sm) throw new ToolError(tr(`Não existe objeto inteligente "${String(i.id)}"`, `Smart object "${String(i.id)}" does not exist`));
       const font = obj(i.params).font;
       if (typeof font === "string") await ensureFont(font);
       commit(updateSmart(doc, sm.id, { ...sm.params, ...obj(i.params) }));
       const now = ed().doc.smart.find((x) => x.id === sm.id)!;
       return { id: sm.id, cost: smartCost(now) };
     },
-  },
-  {
-    name: "add_pattern",
-    title: "Padrão decorativo",
-    description: "Adiciona um padrão decorativo (objeto inteligente): type stripes (grama listrada: x, y, width, height = metades, bands, direction vertical|horizontal, spacing = distância entre as linhas, 3 = sólido e caro), grid (cell) ou dots (pontos em arco: x, y, radius, from, to em graus, count, dot). color em hex.",
-    inputSchema: { type: "object", properties: { type: { type: "string", enum: ["stripes", "grid", "dots"] } }, required: ["type"], additionalProperties: true },
-    run: (i) => {
+  ),
+  t(
+    "add_pattern",
+    ["Padrão decorativo", "Decorative pattern"],
+    [
+      "Adiciona um padrão decorativo (objeto inteligente): type stripes (grama listrada: x, y, width, height = metades, bands, direction vertical|horizontal, spacing = distância entre as linhas, 3 = sólido e caro), grid (cell) ou dots (pontos em arco: x, y, radius, from, to em graus, count, dot). color em hex.",
+      "Adds a decorative pattern (smart object): type stripes (striped grass: x, y, width, height = half-sizes, bands, direction vertical|horizontal, spacing = line distance, 3 = solid and expensive), grid (cell), or dots (arc dots: x, y, radius, from, to in degrees, count, dot). color in hex.",
+    ],
+    { type: "object", properties: { type: { type: "string", enum: ["stripes", "grid", "dots"] } }, required: ["type"], additionalProperties: true },
+    (i) => {
       const made = createSmart(open().doc, "pattern", i);
       commit(made.doc, refsOf(made.smart.items));
       return { id: made.smart.id, cost: smartCost(made.smart) };
     },
-  },
-  {
-    name: "add_svg",
-    title: "Desenho SVG",
-    description: "Desenha um SVG no mapa com segmentos (objeto inteligente): svg (o texto do SVG), x, y (centro), size (largura no mapa), angle, tolerance (simplificação; maior = menos segmentos), color (vazio = cores do SVG), solid (none|ball|all).",
-    inputSchema: { type: "object", properties: { svg: { type: "string" }, x: { type: "number" }, y: { type: "number" }, size: { type: "number" }, angle: { type: "number" }, tolerance: { type: "number" }, color: { type: "string" }, solid: { type: "string", enum: ["none", "ball", "all"] } }, required: ["svg"] },
-    run: (i) => {
+  ),
+  t(
+    "add_svg",
+    ["Desenho SVG", "SVG drawing"],
+    [
+      "Desenha um SVG no mapa com segmentos (objeto inteligente): svg (o texto do SVG), x, y (centro), size (largura no mapa), angle, tolerance (simplificação; maior = menos segmentos), color (vazio = cores do SVG), solid (none|ball|all).",
+      "Draws an SVG on the map using segments (smart object): svg (SVG markup), x, y (center), size (width on map), angle, tolerance (simplification; higher = fewer segments), color (empty = SVG colors), solid (none|ball|all).",
+    ],
+    { type: "object", properties: { svg: { type: "string" }, x: { type: "number" }, y: { type: "number" }, size: { type: "number" }, angle: { type: "number" }, tolerance: { type: "number" }, color: { type: "string" }, solid: { type: "string", enum: ["none", "ball", "all"] } }, required: ["svg"] },
+    (i) => {
       const made = createSmart(open().doc, "shape", i);
       commit(made.doc, refsOf(made.smart.items));
       return { id: made.smart.id, cost: smartCost(made.smart) };
     },
-  },
-  {
-    name: "mirror_objects",
-    title: "Espelhar",
-    description: "Cria cópias espelhadas de objetos que acompanham o original a cada edição. axis: x (esquerda ↔ direita; gols e spawns trocam de time), y (cima ↕ baixo) ou xy (quatro quadrantes). objects: { segments: [índices], vertexes: [...], discs: [...], ... }.",
-    inputSchema: { type: "object", properties: { axis: { type: "string", enum: ["x", "y", "xy"] }, objects: { type: "object", additionalProperties: { type: "array", items: { type: "integer" } } } }, required: ["axis", "objects"] },
-    run: (i) => {
+  ),
+  t(
+    "mirror_objects",
+    ["Espelhar", "Mirror objects"],
+    [
+      "Cria cópias espelhadas de objetos que acompanham o original a cada edição. axis: x (esquerda ↔ direita; gols e spawns trocam de time), y (cima ↕ baixo) ou xy (quatro quadrantes). objects: { segments: [índices], vertexes: [...], discs: [...], ... }.",
+      "Creates mirrored copies of objects that follow the original on every edit. axis: x (left ↔ right; goals and spawns swap teams), y (top ↕ bottom), or xy (four quadrants). objects: { segments: [indices], vertexes: [...], discs: [...], ... }.",
+    ],
+    { type: "object", properties: { axis: { type: "string", enum: ["x", "y", "xy"] }, objects: { type: "object", additionalProperties: { type: "array", items: { type: "integer" } } } }, required: ["axis", "objects"] },
+    (i) => {
       const refs = Object.entries(obj(i.objects)).flatMap(([l, idx]) => refsAt(listOf(l), idx));
       const made = createMirror(open().doc, refs, i.axis as Axis);
-      if (!made) throw new ToolError("Nada para espelhar.");
+      if (!made) throw new ToolError(tr("Nada para espelhar.", "Nothing to mirror."));
       commit(made.doc, refs);
       return { id: made.smart.id, cost: smartCost(made.smart) };
     },
-  },
-  {
-    name: "repeat_objects",
-    title: "Repetir",
-    description: "Cria cópias de objetos que acompanham o original: mode linear (count cópias, cada uma deslocada dx, dy da anterior) ou polar (count cópias giradas step graus em torno de cx, cy). objects como em mirror_objects.",
-    inputSchema: {
+  ),
+  t(
+    "repeat_objects",
+    ["Repetir", "Repeat objects"],
+    [
+      "Cria cópias de objetos que acompanham o original: mode linear (count cópias, cada uma deslocada dx, dy da anterior) ou polar (count cópias giradas step graus em torno de cx, cy). objects como em mirror_objects.",
+      "Creates copies of objects that follow the original: mode linear (count copies, each offset by dx, dy from the previous) or polar (count copies rotated by step degrees around cx, cy). objects as in mirror_objects.",
+    ],
+    {
       type: "object",
       properties: { mode: { type: "string", enum: ["linear", "polar"] }, count: { type: "integer" }, dx: { type: "number" }, dy: { type: "number" }, step: { type: "number" }, cx: { type: "number" }, cy: { type: "number" }, objects: { type: "object" } },
       required: ["mode", "objects"],
     },
-    run: (i) => {
+    (i) => {
       const { objects, ...params } = i;
       const refs = Object.entries(obj(objects)).flatMap(([l, idx]) => refsAt(listOf(l), idx));
       const made = createArray(open().doc, refs, params);
-      if (!made) throw new ToolError("Nada para repetir.");
+      if (!made) throw new ToolError(tr("Nada para repetir.", "Nothing to repeat."));
       commit(made.doc, refsOf(made.smart.items));
       return { id: made.smart.id, cost: smartCost(made.smart) };
     },
-  },
-  {
-    name: "optimize_map",
-    title: "Otimizar",
-    description: "Economiza objetos sem mudar o mapa: unifica vértices repetidos, remove segmentos repetidos e vértices soltos sem colisão, funde segmentos colineares e troca polilinhas circulares por arcos. tolerance = quanto um arco pode se afastar (padrão 0.6).",
-    inputSchema: { type: "object", properties: { tolerance: { type: "number" } } },
-    run: (i) => {
+  ),
+  t(
+    "optimize_map",
+    ["Otimizar", "Optimize map"],
+    [
+      "Economiza objetos sem mudar o mapa: unifica vértices repetidos, remove segmentos repetidos e vértices soltos sem colisão, funde segmentos colineares e troca polilinhas circulares por arcos. tolerance = quanto um arco pode se afastar (padrão 0.6).",
+      "Saves objects without changing the map: merges duplicate vertices, removes duplicate segments and non-colliding loose vertices, merges collinear segments, and replaces circular polylines with arcs. tolerance = max arc deviation (default 0.6).",
+    ],
+    { type: "object", properties: { tolerance: { type: "number" } } },
+    (i) => {
       const r = optimize(open().doc, { ...OPTIMIZE_DEFAULTS, ...(typeof i.tolerance === "number" && { tolerance: i.tolerance }) });
       if (r.steps.length) commit(r.doc, []);
       return { saved: r.saved, steps: r.steps };
     },
-  },
-  {
-    name: "undo",
-    title: "Desfazer",
-    description: "Desfaz a última edição (do agente ou do usuário).",
-    inputSchema: { type: "object", properties: {} },
-    run: () => {
+  ),
+  t(
+    "undo",
+    ["Desfazer", "Undo"],
+    ["Desfaz a última edição (do agente ou do usuário).", "Undoes the last edit (by the agent or user)."],
+    { type: "object", properties: {} },
+    () => {
       undo();
       return { ok: true };
     },
-  },
-  {
-    name: "redo",
-    title: "Refazer",
-    description: "Refaz a última edição desfeita.",
-    inputSchema: { type: "object", properties: {} },
-    run: () => {
+  ),
+  t(
+    "redo",
+    ["Refazer", "Redo"],
+    ["Refaz a última edição desfeita.", "Redoes the last undone edit."],
+    { type: "object", properties: {} },
+    () => {
       redo();
       return { ok: true };
     },
-  },
+  ),
 ];
 
 function indicesOfDoc(refs: Ref[]): JsonObject {

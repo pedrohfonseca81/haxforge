@@ -6,6 +6,7 @@ import { findItem } from "../doc/ops";
 import { resolve } from "../doc/resolve";
 import { focusedIssue, issues } from "../editor/lintState";
 import { commit, ed, requestDraw, select, view, type EditorState } from "../editor/state";
+import { lang, tr } from "../i18n";
 import { useStore } from "../vendor/kickr/client/store";
 
 const ICON = { error: CircleAlert, warn: TriangleAlert, info: Info };
@@ -40,16 +41,17 @@ function focus(is: Issue): void {
 }
 
 export function Issues({ s }: { s: EditorState }) {
+  useStore(lang);
   const { list, doc } = useStore(issues);
   const focused = useStore(focusedIssue);
   const stale = doc !== s.doc;
   return (
     <div class="inspector">
       <div class="insp-head">
-        <h3>Problemas</h3>
-        {stale && <span class="muted small">verificando…</span>}
+        <h3>{tr("Problemas", "Issues")}</h3>
+        {stale && <span class="muted small">{tr("verificando…", "checking…")}</span>}
       </div>
-      {list.length === 0 && !stale && <div class="empty">Nenhum problema encontrado. A bola e os jogadores ficam dentro do mapa.</div>}
+      {list.length === 0 && !stale && <div class="empty">{tr("Nenhum problema encontrado. A bola e os jogadores ficam dentro do mapa.", "No issues found. The ball and players stay inside the map.")}</div>}
       <div class="issues">
         {list.map((is) => {
           const Icon = ICON[is.level];
@@ -73,7 +75,10 @@ export function Issues({ s }: { s: EditorState }) {
         })}
       </div>
       <p class="muted small pad">
-        O caminho tracejado mostra por onde a bola ou o jogador sai. Os testes usam o raio real de cada um e as mesmas regras de colisão da física.
+        {tr(
+          "O caminho tracejado mostra por onde a bola ou o jogador sai. Os testes usam o raio real de cada um e as mesmas regras de colisão da física.",
+          "The dashed path shows where the ball or player escapes. Checks use each body's actual radius and the same collision rules as the physics engine.",
+        )}
       </p>
     </div>
   );

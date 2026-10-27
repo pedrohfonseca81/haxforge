@@ -3,6 +3,7 @@ import { useEffect, useState } from "preact/hooks";
 import { importAsProject, readFile, screen } from "../app";
 import { decodeMap, sharedCode } from "../persist/share";
 import { toast } from "../editor/toast";
+import { lang, tr } from "../i18n";
 import { importImageFile } from "./ImageImport";
 import { toasts } from "../editor/actions";
 import { useStore } from "../vendor/kickr/client/store";
@@ -10,6 +11,7 @@ import { Editor } from "./Editor";
 import { Home } from "./Home";
 
 export function App() {
+  useStore(lang);
   const sc = useStore(screen);
   const ts = useStore(toasts);
   const [dropping, setDropping] = useState(false);
@@ -21,7 +23,7 @@ export function App() {
     history.replaceState(null, "", location.pathname + location.search);
     void decodeMap(code).then(
       (text) => importAsProject(text, "link"),
-      () => toast("O link do mapa está incompleto ou corrompido.", "error"),
+      () => toast(tr("O link do mapa está incompleto ou corrompido.", "The map link is incomplete or corrupted."), "error"),
     );
   }, []);
 
@@ -56,7 +58,13 @@ export function App() {
   return (
     <>
       {sc.name === "home" ? <Home /> : <Editor />}
-      {dropping && <div class="drop-hint">{sc.name === "editor" ? "Solte um .hbs (novo projeto) ou um SVG/imagem (entra neste mapa)" : "Solte o .hbs para abrir como um novo projeto"}</div>}
+      {dropping && (
+        <div class="drop-hint">
+          {sc.name === "editor"
+            ? tr("Solte um .hbs (novo projeto) ou um SVG/imagem (entra neste mapa)", "Drop a .hbs (new project) or an SVG/image (inserted into this map)")
+            : tr("Solte o .hbs para abrir como um novo projeto", "Drop the .hbs to open as a new project")}
+        </div>
+      )}
       <div class="toasts">
         {ts.map((t) => (
           <div class={`toast ${t.kind}`} key={t.id}>

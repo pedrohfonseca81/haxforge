@@ -14,6 +14,7 @@ import { playMode } from "../play/mode";
 export { toast, toasts, type Toast } from "./toast";
 import { Store } from "../vendor/kickr/client/store";
 import { shareUrl } from "../persist/share";
+import { toggleLang, tr } from "../i18n";
 import { snapshot, versionsOpen } from "./versions";
 import { createArray, createMirror, createSmart, explodeSmart, mirrorable, refsOf, smartOf, smartSelected, type Axis } from "../smart/smart";
 import { resolve } from "../doc/resolve";
@@ -40,7 +41,7 @@ export function copySelection(): void {
   const s = ed();
   if (!s.selection.length) return;
   clipboard = copyRefs(s.doc, s.selection);
-  toast("Copiado");
+  toast(tr("Copiado", "Copied"));
 }
 export function cutSelection(): void {
   copySelection();
@@ -124,11 +125,11 @@ export function extractTrait(): string | null {
     if (items.every((f) => jsonEqual(obj(f.item.v)[k], first[k]))) common[k] = first[k];
   }
   if (!Object.keys(common).length) {
-    toast("Os objetos selecionados não têm propriedades em comum para extrair.", "error");
+    toast(tr("Os objetos selecionados não têm propriedades em comum para extrair.", "Selected objects have no shared properties to extract."), "error");
     return null;
   }
   const traits = isObject(s.doc.fields.traits) ? (s.doc.fields.traits as JsonObject) : {};
-  const name = uniqueTraitName(items[0].list === "segments" ? "linha" : items[0].list === "vertexes" ? "ponto" : "estilo", traits);
+  const name = uniqueTraitName(items[0].list === "segments" ? tr("linha", "line") : items[0].list === "vertexes" ? tr("ponto", "point") : tr("estilo", "style"), traits);
   let doc = setField(s.doc, "traits", { ...traits, [name]: common });
   const byList = new Map<ListKey, number[]>();
   for (const f of items) byList.set(f.list, [...(byList.get(f.list) ?? []), f.item.id]);
@@ -142,7 +143,7 @@ export function extractTrait(): string | null {
   }
   commit(doc);
   patch({ panel: "traits" });
-  toast(`Trait "${name}" criado com ${Object.keys(common).length} propriedade(s).`);
+  toast(tr(`Trait "${name}" criado com ${Object.keys(common).length} propriedade(s).`, `Trait "${name}" created with ${Object.keys(common).length} propert${Object.keys(common).length === 1 ? "y" : "ies"}.`));
   return name;
 }
 
@@ -209,7 +210,7 @@ export function setTrait(name: string, value: Json): void {
 export function exportProblems(): string[] {
   const doc = ed().doc;
   const out: string[] = [];
-  for (const b of budget(doc)) if (b.used > LIMIT) out.push(`${b.label}: ${b.used} de ${LIMIT}`);
+  for (const b of budget(doc)) if (b.used > LIMIT) out.push(tr(`${b.label}: ${b.used} de ${LIMIT}`, `${b.label}: ${b.used} of ${LIMIT}`));
   if (out.length) return out;
   try {
     compileStadium(toJson(doc, true));
@@ -221,13 +222,13 @@ export function exportProblems(): string[] {
 
 const fileName = () => {
   const name = ed().doc.fields.name;
-  return `${(typeof name === "string" && name.trim() ? name.trim() : "mapa").replace(/[\\/:*?"<>|]+/g, "_")}.hbs`;
+  return `${(typeof name === "string" && name.trim() ? name.trim() : tr("mapa", "map")).replace(/[\\/:*?"<>|]+/g, "_")}.hbs`;
 };
 
 export function exportHbs(clean: boolean): void {
   const problems = exportProblems();
   if (problems.length) {
-    toast(`Não dá pra exportar: ${problems.join("; ")}`, "error");
+    toast(tr(`Não dá pra exportar: ${problems.join("; ")}`, `Cannot export: ${problems.join("; ")}`), "error");
     return;
   }
   const s = ed();
@@ -241,13 +242,13 @@ export function exportHbs(clean: boolean): void {
 
 export async function copyHbs(): Promise<void> {
   const problems = exportProblems();
-  if (problems.length) toast(`Atenção: ${problems.join("; ")}`, "error");
+  if (problems.length) toast(tr(`Atenção: ${problems.join("; ")}`, `Warning: ${problems.join("; ")}`), "error");
   const s = ed();
   try {
     await navigator.clipboard.writeText(exportText(s.doc, s.source));
-    toast("Texto do .hbs copiado");
+    toast(tr("Texto do .hbs copiado", ".hbs text copied"));
   } catch {
-    toast("O navegador não deixou copiar.", "error");
+    toast(tr("O navegador não deixou copiar.", "Browser blocked copying."), "error");
   }
 }
 
@@ -256,9 +257,9 @@ export async function copyShareLink(): Promise<void> {
   const url = await shareUrl(exportText(s.doc, s.source));
   try {
     await navigator.clipboard.writeText(url);
-    toast(`Link copiado (${Math.round(url.length / 1024)} KB). Quem abrir recebe uma cópia do mapa.`);
+    toast(tr(`Link copiado (${Math.round(url.length / 1024)} KB). Quem abrir recebe uma cópia do mapa.`, `Link copied (${Math.round(url.length / 1024)} KB). Anyone opening it gets a copy of the map.`));
   } catch {
-    toast("O navegador não deixou copiar o link.", "error");
+    toast(tr("O navegador não deixou copiar o link.", "Browser blocked copying the link."), "error");
   }
 }
 
@@ -272,18 +273,26 @@ export interface Command {
   run: () => void;
 }
 
-export const TOOLS: { id: ToolId; label: string; key: string }[] = [
-  { id: "select", label: "Selecionar", key: "V" },
-  { id: "hand", label: "Mover a vista", key: "H" },
-  { id: "segment", label: "Segmento", key: "S" },
-  { id: "vertex", label: "Vértice", key: "X" },
-  { id: "disc", label: "Disco", key: "D" },
-  { id: "goal", label: "Gol", key: "G" },
-  { id: "plane", label: "Plano", key: "P" },
-  { id: "joint", label: "Joint", key: "J" },
-  { id: "redSpawn", label: "Spawn red", key: "R" },
-  { id: "blueSpawn", label: "Spawn blue", key: "B" },
-  { id: "text", label: "Letreiro", key: "T" },
+const toolDef = (id: ToolId, pt: string, en: string, key: string) => ({
+  id,
+  key,
+  get label() {
+    return tr(pt, en);
+  },
+});
+
+export const TOOLS: { id: ToolId; readonly label: string; key: string }[] = [
+  toolDef("select", "Selecionar", "Select", "V"),
+  toolDef("hand", "Mover a vista", "Pan view", "H"),
+  toolDef("segment", "Segmento", "Segment", "S"),
+  toolDef("vertex", "Vértice", "Vertex", "X"),
+  toolDef("disc", "Disco", "Disc", "D"),
+  toolDef("goal", "Gol", "Goal", "G"),
+  toolDef("plane", "Plano", "Plane", "P"),
+  toolDef("joint", "Joint", "Joint", "J"),
+  toolDef("redSpawn", "Spawn red", "Red spawn", "R"),
+  toolDef("blueSpawn", "Spawn blue", "Blue spawn", "B"),
+  toolDef("text", "Letreiro", "Banner text", "T"),
 ];
 
 // ---- Smart objects -----------------------------------------------------------------------
@@ -291,7 +300,7 @@ export const TOOLS: { id: ToolId; label: string; key: string }[] = [
 export const optimizerOpen = new Store<boolean>(false);
 
 export function insertText(): void {
-  const made = createSmart(ed().doc, "text", { text: "TEXTO", x: Math.round(view.cam.x), y: Math.round(view.cam.y) });
+  const made = createSmart(ed().doc, "text", { text: tr("TEXTO", "TEXT"), x: Math.round(view.cam.x), y: Math.round(view.cam.y) });
   commit(made.doc, refsOf(made.smart.items));
 }
 
@@ -306,24 +315,28 @@ export function insertField(template = "classic"): void {
   const made = createSmart(s.doc, "field", { template });
   commit(made.doc, refsOf(made.smart.items));
   fitView();
-  toast("Campo gerado. Ajuste os parâmetros no painel à direita.");
+  toast(tr("Campo gerado. Ajuste os parâmetros no painel à direita.", "Field generated. Adjust its parameters in the right panel."));
 }
 
 export function mirrorSelection(axis: Axis): void {
   const s = ed();
   const refs = mirrorable(s.doc, s.selection);
-  if (!refs.length) return toast("Selecione o que espelhar (cópias espelhadas não entram).", "error");
+  if (!refs.length) return toast(tr("Selecione o que espelhar (cópias espelhadas não entram).", "Select what to mirror (mirror copies are excluded)."), "error");
   const made = createMirror(s.doc, refs, axis);
   if (!made) return;
   commit(made.doc, refs);
-  toast(axis === "xy" ? "3 cópias criadas: elas acompanham o original." : "Cópia espelhada criada: ela acompanha o original.");
+  toast(
+    axis === "xy"
+      ? tr("3 cópias criadas: elas acompanham o original.", "3 copies created: they follow the original.")
+      : tr("Cópia espelhada criada: ela acompanha o original.", "Mirrored copy created: it follows the original."),
+  );
 }
 
 // Repeats the selection: a row of copies to the right, or copies around the origin.
 export function arraySelection(mode: "linear" | "polar"): void {
   const s = ed();
   const refs = mirrorable(s.doc, s.selection);
-  if (!refs.length) return toast("Selecione o que repetir.", "error");
+  if (!refs.length) return toast(tr("Selecione o que repetir.", "Select what to repeat."), "error");
   const geo = resolve(s.doc);
   let x0 = Infinity;
   let x1 = -Infinity;
@@ -342,7 +355,7 @@ export function arraySelection(mode: "linear" | "polar"): void {
   const made = createArray(s.doc, refs, params);
   if (!made) return;
   commit(made.doc, refsOf(made.smart.items));
-  toast("Cópias criadas: elas acompanham o original. Ajuste quantidade e distância no painel.");
+  toast(tr("Cópias criadas: elas acompanham o original. Ajuste quantidade e distância no painel.", "Copies created: they follow the original. Adjust count and offset in the panel."));
 }
 
 export function insertPattern(type: "stripes" | "grid" | "dots"): void {
@@ -364,60 +377,70 @@ export function insertPattern(type: "stripes" | "grid" | "dots"): void {
 export function explodeSelection(): void {
   const s = ed();
   const sm = smartSelected(s.doc, s.selection) ?? (s.selection[0] ? smartOf(s.doc, s.selection[0]) : null);
-  if (!sm) return toast("Selecione um objeto inteligente.", "error");
+  if (!sm) return toast(tr("Selecione um objeto inteligente.", "Select a smart object."), "error");
   commit(explodeSmart(s.doc, sm.id));
-  toast("Desvinculado: os itens agora são primitivas comuns.");
+  toast(tr("Desvinculado: os itens agora são primitivas comuns.", "Unlinked: items are now regular primitives."));
 }
 
 const togglePref = (k: "showGrid" | "snapGrid" | "snapPoints" | "showInvisible" | "showVertices") => () => prefs.update({ [k]: !prefs.get()[k] });
 
 export function commands(goHome: () => void): Command[] {
+  const gTools = tr("Ferramentas", "Tools");
+  const gEdit = tr("Editar", "Edit");
+  const gOrder = tr("Ordem", "Order");
+  const gTraits = tr("Traits", "Traits");
+  const gCreate = tr("Criar", "Create");
+  const gSym = tr("Simetria", "Symmetry");
+  const gView = tr("Vista", "View");
+  const gPlay = tr("Jogar", "Play");
+  const gFile = tr("Arquivo", "File");
   return [
-    ...TOOLS.map((t) => ({ id: `tool.${t.id}`, label: `Ferramenta: ${t.label}`, group: "Ferramentas", keys: t.key, run: () => setTool(t.id) })),
-    { id: "undo", label: "Desfazer", group: "Editar", keys: "Ctrl+Z", run: undo },
-    { id: "redo", label: "Refazer", group: "Editar", keys: "Ctrl+Shift+Z", run: redo },
-    { id: "delete", label: "Apagar seleção", group: "Editar", keys: "Del", run: deleteSelection },
-    { id: "duplicate", label: "Duplicar seleção", group: "Editar", keys: "Ctrl+D", run: duplicate },
-    { id: "copy", label: "Copiar", group: "Editar", keys: "Ctrl+C", run: copySelection },
-    { id: "cut", label: "Recortar", group: "Editar", keys: "Ctrl+X", run: cutSelection },
-    { id: "paste", label: "Colar", group: "Editar", keys: "Ctrl+V", run: () => paste() },
-    { id: "selectAll", label: "Selecionar tudo", group: "Editar", keys: "Ctrl+A", run: selectAll },
-    { id: "deselect", label: "Limpar seleção", group: "Editar", keys: "Esc", run: () => select([]) },
-    { id: "front", label: "Trazer para a frente", group: "Ordem", keys: "Ctrl+Shift+]", run: () => moveSelection("front") },
-    { id: "forward", label: "Avançar uma posição", group: "Ordem", keys: "Ctrl+]", run: () => moveSelection("forward") },
-    { id: "backward", label: "Recuar uma posição", group: "Ordem", keys: "Ctrl+[", run: () => moveSelection("backward") },
-    { id: "back", label: "Mandar para trás", group: "Ordem", keys: "Ctrl+Shift+[", run: () => moveSelection("back") },
-    { id: "extractTrait", label: "Extrair trait da seleção", group: "Traits", run: extractTrait },
-    { id: "text", label: "Inserir letreiro", group: "Criar", keys: "T", run: insertText },
-    { id: "field", label: "Gerar campo (Classic, Futsal, Real Soccer, Hockey…)", group: "Criar", run: () => insertField() },
-    { id: "mirrorX", label: "Espelhar seleção (esquerda ↔ direita)", group: "Simetria", run: () => mirrorSelection("x") },
-    { id: "mirrorY", label: "Espelhar seleção (cima ↕ baixo)", group: "Simetria", run: () => mirrorSelection("y") },
-    { id: "mirrorXY", label: "Espelhar seleção nos 4 quadrantes", group: "Simetria", run: () => mirrorSelection("xy") },
-    { id: "explode", label: "Desvincular objeto inteligente", group: "Criar", run: explodeSelection },
-    { id: "image", label: "Importar SVG ou imagem…", group: "Criar", run: () => document.querySelector<HTMLInputElement>("nav.toolbar input[type=file]")?.click() },
-    { id: "stripes", label: "Inserir padrão: grama listrada", group: "Criar", run: () => insertPattern("stripes") },
-    { id: "grid", label: "Inserir padrão: grade", group: "Criar", run: () => insertPattern("grid") },
-    { id: "dots", label: "Inserir padrão: pontos em arco", group: "Criar", run: () => insertPattern("dots") },
-    { id: "arrayLinear", label: "Repetir seleção em linha", group: "Simetria", run: () => arraySelection("linear") },
-    { id: "arrayPolar", label: "Repetir seleção em círculo", group: "Simetria", run: () => arraySelection("polar") },
-    { id: "optimize", label: "Otimizar mapa (economizar vértices e segmentos)", group: "Ferramentas", run: () => optimizerOpen.set(true) },
-    { id: "traits", label: "Abrir painel de traits", group: "Traits", run: () => patch({ panel: "traits" }) },
-    { id: "fit", label: "Enquadrar o mapa", group: "Vista", keys: "Shift+1", run: fitView },
-    { id: "zoom100", label: "Zoom 100%", group: "Vista", keys: "Shift+0", run: () => zoomAt(view.width / 2, view.height / 2, 1 / view.cam.zoom) },
-    { id: "grid", label: "Mostrar/ocultar grid", group: "Vista", keys: "Ctrl+'", run: togglePref("showGrid") },
-    { id: "snapGrid", label: "Snap no grid", group: "Vista", run: togglePref("snapGrid") },
-    { id: "snapPoints", label: "Ímã em pontos e guias", group: "Vista", run: togglePref("snapPoints") },
-    { id: "invisible", label: "Mostrar/ocultar objetos invisíveis", group: "Vista", run: togglePref("showInvisible") },
-    { id: "vertices", label: "Mostrar/ocultar vértices", group: "Vista", run: togglePref("showVertices") },
-    { id: "play", label: "Jogar no mapa", group: "Jogar", keys: "Ctrl+Enter", run: () => playMode.set("full") },
-    { id: "playSplit", label: "Jogar lado a lado (recarrega a cada edição)", group: "Jogar", keys: "Ctrl+Shift+Enter", run: () => playMode.set("split") },
-    { id: "export", label: "Exportar .hbs", group: "Arquivo", keys: "Ctrl+E", run: () => exportHbs(false) },
-    { id: "exportClean", label: "Exportar .hbs limpo (sem metadados do editor)", group: "Arquivo", run: () => exportHbs(true) },
-    { id: "copyHbs", label: "Copiar texto do .hbs", group: "Arquivo", run: () => void copyHbs() },
-    { id: "share", label: "Copiar link do mapa", group: "Arquivo", run: () => void copyShareLink() },
-    { id: "versions", label: "Versões (histórico e restaurar)", group: "Arquivo", run: () => versionsOpen.set(true) },
-    { id: "saveVersion", label: "Salvar versão agora", group: "Arquivo", run: () => void snapshot("Versão salva").then(() => toast("Versão salva")) },
-    { id: "save", label: "Salvar agora", group: "Arquivo", keys: "Ctrl+S", run: () => void saveNow().then(() => toast("Salvo")) },
-    { id: "home", label: "Voltar para os projetos", group: "Arquivo", run: goHome },
+    ...TOOLS.map((t) => ({ id: `tool.${t.id}`, label: `${tr("Ferramenta", "Tool")}: ${t.label}`, group: gTools, keys: t.key, run: () => setTool(t.id) })),
+    { id: "undo", label: tr("Desfazer", "Undo"), group: gEdit, keys: "Ctrl+Z", run: undo },
+    { id: "redo", label: tr("Refazer", "Redo"), group: gEdit, keys: "Ctrl+Shift+Z", run: redo },
+    { id: "delete", label: tr("Apagar seleção", "Delete selection"), group: gEdit, keys: "Del", run: deleteSelection },
+    { id: "duplicate", label: tr("Duplicar seleção", "Duplicate selection"), group: gEdit, keys: "Ctrl+D", run: duplicate },
+    { id: "copy", label: tr("Copiar", "Copy"), group: gEdit, keys: "Ctrl+C", run: copySelection },
+    { id: "cut", label: tr("Recortar", "Cut"), group: gEdit, keys: "Ctrl+X", run: cutSelection },
+    { id: "paste", label: tr("Colar", "Paste"), group: gEdit, keys: "Ctrl+V", run: () => paste() },
+    { id: "selectAll", label: tr("Selecionar tudo", "Select all"), group: gEdit, keys: "Ctrl+A", run: selectAll },
+    { id: "deselect", label: tr("Limpar seleção", "Clear selection"), group: gEdit, keys: "Esc", run: () => select([]) },
+    { id: "front", label: tr("Trazer para a frente", "Bring to front"), group: gOrder, keys: "Ctrl+Shift+]", run: () => moveSelection("front") },
+    { id: "forward", label: tr("Avançar uma posição", "Bring forward"), group: gOrder, keys: "Ctrl+]", run: () => moveSelection("forward") },
+    { id: "backward", label: tr("Recuar uma posição", "Send backward"), group: gOrder, keys: "Ctrl+[", run: () => moveSelection("backward") },
+    { id: "back", label: tr("Mandar para trás", "Send to back"), group: gOrder, keys: "Ctrl+Shift+[", run: () => moveSelection("back") },
+    { id: "extractTrait", label: tr("Extrair trait da seleção", "Extract trait from selection"), group: gTraits, run: extractTrait },
+    { id: "text", label: tr("Inserir letreiro", "Insert banner text"), group: gCreate, keys: "T", run: insertText },
+    { id: "field", label: tr("Gerar campo (Classic, Futsal, Real Soccer, Hockey…)", "Generate field (Classic, Futsal, Real Soccer, Hockey…)"), group: gCreate, run: () => insertField() },
+    { id: "mirrorX", label: tr("Espelhar seleção (esquerda ↔ direita)", "Mirror selection (left ↔ right)"), group: gSym, run: () => mirrorSelection("x") },
+    { id: "mirrorY", label: tr("Espelhar seleção (cima ↕ baixo)", "Mirror selection (top ↕ bottom)"), group: gSym, run: () => mirrorSelection("y") },
+    { id: "mirrorXY", label: tr("Espelhar seleção nos 4 quadrantes", "Mirror selection across 4 quadrants"), group: gSym, run: () => mirrorSelection("xy") },
+    { id: "explode", label: tr("Desvincular objeto inteligente", "Unlink smart object"), group: gCreate, run: explodeSelection },
+    { id: "image", label: tr("Importar SVG ou imagem…", "Import SVG or image…"), group: gCreate, run: () => document.querySelector<HTMLInputElement>("nav.toolbar input[type=file]")?.click() },
+    { id: "stripes", label: tr("Inserir padrão: grama listrada", "Insert pattern: striped grass"), group: gCreate, run: () => insertPattern("stripes") },
+    { id: "grid", label: tr("Inserir padrão: grade", "Insert pattern: grid"), group: gCreate, run: () => insertPattern("grid") },
+    { id: "dots", label: tr("Inserir padrão: pontos em arco", "Insert pattern: arc dots"), group: gCreate, run: () => insertPattern("dots") },
+    { id: "arrayLinear", label: tr("Repetir seleção em linha", "Repeat selection in a line"), group: gSym, run: () => arraySelection("linear") },
+    { id: "arrayPolar", label: tr("Repetir seleção em círculo", "Repeat selection in a circle"), group: gSym, run: () => arraySelection("polar") },
+    { id: "optimize", label: tr("Otimizar mapa (economizar vértices e segmentos)", "Optimize map (save vertices and segments)"), group: gTools, run: () => optimizerOpen.set(true) },
+    { id: "traits", label: tr("Abrir painel de traits", "Open traits panel"), group: gTraits, run: () => patch({ panel: "traits" }) },
+    { id: "fit", label: tr("Enquadrar o mapa", "Fit map in view"), group: gView, keys: "Shift+1", run: fitView },
+    { id: "zoom100", label: tr("Zoom 100%", "Zoom 100%"), group: gView, keys: "Shift+0", run: () => zoomAt(view.width / 2, view.height / 2, 1 / view.cam.zoom) },
+    { id: "grid", label: tr("Mostrar/ocultar grid", "Show/hide grid"), group: gView, keys: "Ctrl+'", run: togglePref("showGrid") },
+    { id: "snapGrid", label: tr("Snap no grid", "Snap to grid"), group: gView, run: togglePref("snapGrid") },
+    { id: "snapPoints", label: tr("Ímã em pontos e guias", "Snap to points and guides"), group: gView, run: togglePref("snapPoints") },
+    { id: "invisible", label: tr("Mostrar/ocultar objetos invisíveis", "Show/hide invisible objects"), group: gView, run: togglePref("showInvisible") },
+    { id: "vertices", label: tr("Mostrar/ocultar vértices", "Show/hide vertices"), group: gView, run: togglePref("showVertices") },
+    { id: "lang", label: tr("Mudar idioma para Inglês (EN)", "Switch language to Portuguese (PT-BR)"), group: gView, run: toggleLang },
+    { id: "play", label: tr("Jogar no mapa", "Play on map"), group: gPlay, keys: "Ctrl+Enter", run: () => playMode.set("full") },
+    { id: "playSplit", label: tr("Jogar lado a lado (recarrega a cada edição)", "Play side-by-side (reloads on every edit)"), group: gPlay, keys: "Ctrl+Shift+Enter", run: () => playMode.set("split") },
+    { id: "export", label: tr("Exportar .hbs", "Export .hbs"), group: gFile, keys: "Ctrl+E", run: () => exportHbs(false) },
+    { id: "exportClean", label: tr("Exportar .hbs limpo (sem metadados do editor)", "Export clean .hbs (without editor metadata)"), group: gFile, run: () => exportHbs(true) },
+    { id: "copyHbs", label: tr("Copiar texto do .hbs", "Copy .hbs text"), group: gFile, run: () => void copyHbs() },
+    { id: "share", label: tr("Copiar link do mapa", "Copy map share link"), group: gFile, run: () => void copyShareLink() },
+    { id: "versions", label: tr("Versões (histórico e restaurar)", "Versions (history and restore)"), group: gFile, run: () => versionsOpen.set(true) },
+    { id: "saveVersion", label: tr("Salvar versão agora", "Save version now"), group: gFile, run: () => void snapshot(tr("Versão salva", "Saved version")).then(() => toast(tr("Versão salva", "Version saved"))) },
+    { id: "save", label: tr("Salvar agora", "Save now"), group: gFile, keys: "Ctrl+S", run: () => void saveNow().then(() => toast(tr("Salvo", "Saved"))) },
+    { id: "home", label: tr("Voltar para os projetos", "Back to projects"), group: gFile, run: goHome },
   ];
 }

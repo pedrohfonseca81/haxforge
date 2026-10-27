@@ -1,6 +1,7 @@
 // The bodies that move in a match (the ball and each team's players), with
 // the collision flags HaxBall gives them, and what each one bumps into.
 import { Flag, PLAYER_CMASK } from "../vendor/kickr/shared/flags";
+import { tr } from "../i18n";
 import type { Doc } from "./model";
 import type { Geo } from "./resolve";
 
@@ -21,7 +22,7 @@ export const canCollide = (a: { cMask: number; cGroup: number }, b: { cMask: num
 export function bodies(_doc: Doc, geo: Geo): Body[] {
   const out: Body[] = [];
   const ball = geo.ball ?? geo.discs[0] ?? null;
-  if (ball) out.push({ key: "ball", label: "a bola", radius: ball.radius, cMask: ball.cMask, cGroup: ball.cGroup, starts: [[ball.x, ball.y]] });
+  if (ball) out.push({ key: "ball", label: tr("a bola", "the ball"), radius: ball.radius, cMask: ball.cMask, cGroup: ball.cGroup, starts: [[ball.x, ball.y]] });
   for (const [key, flag, list, side] of [
     ["red", Flag.red, geo.redSpawnPoints, -1],
     ["blue", Flag.blue, geo.blueSpawnPoints, 1],
@@ -29,7 +30,7 @@ export function bodies(_doc: Doc, geo: Geo): Body[] {
     const pts = list.filter((p) => p !== null);
     out.push({
       key,
-      label: key === "red" ? "o jogador red" : "o jogador blue",
+      label: key === "red" ? tr("o jogador red", "the red player") : tr("o jogador blue", "the blue player"),
       radius: geo.playerRadius,
       cMask: PLAYER_CMASK,
       cGroup: flag | geo.playerGroup,
@@ -54,10 +55,35 @@ export function roleOf(wall: { cMask: number; cGroup: number }, bs: Body[]): Rol
   return ko ? "kickoff" : "none";
 }
 
-export const ROLE_STYLE: Record<Role, { color: string; label: string }> = {
-  all: { color: "#22d3ee", label: "bola e jogadores" },
-  ball: { color: "#fbbf24", label: "só a bola" },
-  players: { color: "#f472b6", label: "só jogadores" },
-  kickoff: { color: "#a78bfa", label: "barreira do kickoff" },
-  none: { color: "#6b7280", label: "nada (decorativo)" },
+export const ROLE_STYLE: Record<Role, { color: string; readonly label: string }> = {
+  all: {
+    color: "#22d3ee",
+    get label() {
+      return tr("bola e jogadores", "ball and players");
+    },
+  },
+  ball: {
+    color: "#fbbf24",
+    get label() {
+      return tr("só a bola", "ball only");
+    },
+  },
+  players: {
+    color: "#f472b6",
+    get label() {
+      return tr("só jogadores", "players only");
+    },
+  },
+  kickoff: {
+    color: "#a78bfa",
+    get label() {
+      return tr("barreira do kickoff", "kickoff barrier");
+    },
+  },
+  none: {
+    color: "#6b7280",
+    get label() {
+      return tr("nada (decorativo)", "nothing (decorative)");
+    },
+  },
 };

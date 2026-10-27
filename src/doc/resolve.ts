@@ -3,6 +3,7 @@
 // failing the whole map (the map is often half drawn while editing).
 import { Flag, parseFlags } from "../vendor/kickr/shared/flags";
 import { compileDisc, compileSegment, DISC_DEFAULTS, parseColor, withTrait, type DiscDef, type Segment, type Stadium, type Vertex } from "../vendor/kickr/shared/stadium";
+import { lang, tr } from "../i18n";
 import { traitsOf } from "./fields";
 import { isObject, type JsonObject } from "./json";
 import type { Doc, Item, ListKey } from "./model";
@@ -54,12 +55,17 @@ export interface Geo {
   playerGroup: number;
 }
 
-const cache = new WeakMap<Doc, Geo>();
+let cache = new WeakMap<Doc, Geo>();
+let cacheLang = lang.get();
 
 const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
 const vec = (v: unknown): Vec | null => (Array.isArray(v) && typeof v[0] === "number" && typeof v[1] === "number" ? [v[0], v[1]] : null);
 
 export function resolve(doc: Doc): Geo {
+  if (cacheLang !== lang.get()) {
+    cache = new WeakMap<Doc, Geo>();
+    cacheLang = lang.get();
+  }
   const hit = cache.get(doc);
   if (hit) return hit;
   const traits = traitsOf(doc.fields);
@@ -75,27 +81,27 @@ export function resolve(doc: Doc): Geo {
     });
 
   const vertexes = each("vertexes", (raw): Vertex => {
-    if (typeof raw.x !== "number" || typeof raw.y !== "number") throw new Error("vértice sem x/y");
+    if (typeof raw.x !== "number" || typeof raw.y !== "number") throw new Error(tr("vértice sem x/y", "vertex missing x/y"));
     return { x: raw.x, y: raw.y, bCoef: num(raw.bCoef, 1), cMask: parseFlags(raw.cMask, Flag.all), cGroup: parseFlags(raw.cGroup, Flag.wall) };
   });
   const segments = each("segments", (raw): GeoSegment => {
     const v0 = raw.v0 as number;
     const v1 = raw.v1 as number;
-    if (!vertexes[v0] || !vertexes[v1]) throw new Error("segmento aponta para um vértice inexistente");
+    if (!vertexes[v0] || !vertexes[v1]) throw new Error(tr("segmento aponta para um vértice inexistente", "segment points to a non-existent vertex"));
     return { ...compileSegment(raw, vertexes as Vertex[]), v0, v1 };
   });
   const discs = each("discs", (raw) => compileDisc(raw));
   const goals = each("goals", (raw): GeoGoal => {
     const p0 = vec(raw.p0);
     const p1 = vec(raw.p1);
-    if (!p0 || !p1) throw new Error("gol sem p0/p1");
+    if (!p0 || !p1) throw new Error(tr("gol sem p0/p1", "goal missing p0/p1"));
     return { p0, p1, team: raw.team === "red" ? 1 : raw.team === "blue" ? 2 : 0 };
   });
   const planes = each("planes", (raw): GeoPlane => {
     const nv = vec(raw.normal);
-    if (!nv || typeof raw.dist !== "number") throw new Error("plano sem normal/dist");
+    if (!nv || typeof raw.dist !== "number") throw new Error(tr("plano sem normal/dist", "plane missing normal/dist"));
     const len = Math.hypot(nv[0], nv[1]);
-    if (!len) throw new Error("normal nula");
+    if (!len) throw new Error(tr("normal nula", "zero normal"));
     return { nx: nv[0] / len, ny: nv[1] / len, dist: raw.dist, cMask: parseFlags(raw.cMask, Flag.all), cGroup: parseFlags(raw.cGroup, Flag.wall) };
   });
 
@@ -115,13 +121,13 @@ export function resolve(doc: Doc): Geo {
   const joints = each("joints", (raw): GeoJoint => {
     const a = discAt(raw.d0);
     const b = discAt(raw.d1);
-    if (!a || !b) throw new Error("joint aponta para um disco inexistente");
+    if (!a || !b) throw new Error(tr("joint aponta para um disco inexistente", "joint points to a non-existent disc"));
     return { a: [a.x, a.y], b: [b.x, b.y], color: parseColor(raw.color, 0) };
   });
   const spawns = (list: "redSpawnPoints" | "blueSpawnPoints") =>
     doc.lists[list].map((it) => {
       const p = vec(it.v);
-      if (!p) errors.set(`${list}:${it.id}`, "spawn deve ser [x, y]");
+      if (!p) errors.set(`${list}:${it.id}`, tr("spawn deve ser [x, y]", "spawn must be [x, y]"));
       return p;
     });
 
@@ -173,11 +179,11 @@ export function resolve(doc: Doc): Geo {
 // Counts against HaxBall's limit of 255 per kind (the ball counts as a disc).
 export function budget(doc: Doc): { key: string; label: string; used: number }[] {
   return [
-    { key: "vertexes", label: "Vértices", used: doc.lists.vertexes.length },
-    { key: "segments", label: "Segmentos", used: doc.lists.segments.length },
-    { key: "discs", label: "Discos", used: doc.lists.discs.length + ballOffset(doc) },
-    { key: "planes", label: "Planos", used: doc.lists.planes.length },
-    { key: "goals", label: "Gols", used: doc.lists.goals.length },
+    { key: "vertexes", label: tr("Vértices", "Vertices"), used: doc.lists.vertexes.length },
+    { key: "segments", label: tr("Segmentos", "Segments"), used: doc.lists.segments.length },
+    { key: "discs", label: tr("Discos", "Discs"), used: doc.lists.discs.length + ballOffset(doc) },
+    { key: "planes", label: tr("Planos", "Planes"), used: doc.lists.planes.length },
+    { key: "goals", label: tr("Gols", "Goals"), used: doc.lists.goals.length },
   ];
 }
 export const LIMIT = 255;

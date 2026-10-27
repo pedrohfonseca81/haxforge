@@ -10,6 +10,7 @@ import { LIST_KEYS } from "../doc/model";
 import { obj, refOf } from "../doc/ops";
 import { select, type EditorState } from "../editor/state";
 import { deleteTrait, renameTrait, setTrait, traitUsage, uniqueTraitName } from "../editor/actions";
+import { tr } from "../i18n";
 
 export function Traits({ s }: { s: EditorState }) {
   const traits = traitsOf(s.doc.fields);
@@ -19,12 +20,12 @@ export function Traits({ s }: { s: EditorState }) {
     <div class="inspector">
       <div class="insp-head">
         <h3>Traits</h3>
-        <button class="btn small" onClick={() => setTrait(uniqueTraitName("novo", traits), {})}>
-          <Plus size={14} /> Novo
+        <button class="btn small" onClick={() => setTrait(uniqueTraitName(tr("novo", "new"), traits), {})}>
+          <Plus size={14} /> {tr("Novo", "New")}
         </button>
       </div>
-      <p class="muted small pad">Um trait preenche os campos que o objeto não define. Mudar o trait muda todos os objetos que o usam.</p>
-      {names.length === 0 && <div class="empty">Este mapa não tem traits.</div>}
+      <p class="muted small pad">{tr("Um trait preenche os campos que o objeto não define. Mudar o trait muda todos os objetos que o usam.", "A trait fills in fields the object leaves unset. Editing a trait updates every object that uses it.")}</p>
+      {names.length === 0 && <div class="empty">{tr("Este mapa não tem traits.", "This map has no traits.")}</div>}
       {names.map((name) => (
         <TraitCard key={name} s={s} name={name} value={traits[name]} uses={usage.get(name) ?? 0} />
       ))}
@@ -54,14 +55,14 @@ function TraitCard({ s, name, value, uses }: { s: EditorState; name: string; val
           onBlur={() => (title.trim() && title !== name ? renameTrait(name, title.trim()) : setTitle(name))}
           onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
         />
-        <button class="chip" title="Selecionar os objetos que usam este trait" onClick={selectUsers} disabled={!uses}>
-          {uses} uso{uses === 1 ? "" : "s"}
+        <button class="chip" title={tr("Selecionar os objetos que usam este trait", "Select objects using this trait")} onClick={selectUsers} disabled={!uses}>
+          {uses} {tr(uses === 1 ? "uso" : "usos", uses === 1 ? "use" : "uses")}
         </button>
         <button
           class="icon-btn danger"
-          title={uses ? "Apagar (os objetos perdem o trait)" : "Apagar"}
+          title={uses ? tr("Apagar (os objetos perdem o trait)", "Delete (objects lose the trait)") : tr("Apagar", "Delete")}
           onClick={() => {
-            if (!uses || confirm(`Apagar o trait "${name}"? ${uses} objeto(s) deixam de usá-lo.`)) deleteTrait(name);
+            if (!uses || confirm(tr(`Apagar o trait "${name}"? ${uses} objeto(s) deixam de usá-lo.`, `Delete trait "${name}"? ${uses} object(s) will stop using it.`))) deleteTrait(name);
           }}
         >
           <Trash2 size={14} />

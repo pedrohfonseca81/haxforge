@@ -15,17 +15,27 @@ import { resolve } from "../doc/resolve";
 import { inlineText } from "../doc/style";
 import { commit, ed, select, type EditorState } from "../editor/state";
 import { arraySelection, deleteSelection, duplicate, extractTrait, mirrorSelection, moveSelection, toast } from "../editor/actions";
+import { tr } from "../i18n";
 import { ColorInput, Field, FlagsInput, MIXED, NumberInput, Segmented, Select, TextInput, Toggle, VecInput, type Shown } from "./widgets";
 
+const labelPair = (pt: [string, string], en: [string, string]): [string, string] => {
+  const arr = [...pt] as [string, string];
+  Object.defineProperties(arr, {
+    0: { get: () => tr(pt[0], en[0]), enumerable: true },
+    1: { get: () => tr(pt[1], en[1]), enumerable: true },
+  });
+  return arr;
+};
+
 export const LIST_LABELS: Record<ListKey, [string, string]> = {
-  vertexes: ["Vértice", "Vértices"],
-  segments: ["Segmento", "Segmentos"],
-  goals: ["Gol", "Gols"],
-  discs: ["Disco", "Discos"],
-  planes: ["Plano", "Planos"],
-  joints: ["Joint", "Joints"],
-  redSpawnPoints: ["Spawn red", "Spawns red"],
-  blueSpawnPoints: ["Spawn blue", "Spawns blue"],
+  vertexes: labelPair(["Vértice", "Vértices"], ["Vertex", "Vertices"]),
+  segments: labelPair(["Segmento", "Segmentos"], ["Segment", "Segments"]),
+  goals: labelPair(["Gol", "Gols"], ["Goal", "Goals"]),
+  discs: labelPair(["Disco", "Discs"], ["Disc", "Discs"]),
+  planes: labelPair(["Plano", "Planos"], ["Plane", "Planes"]),
+  joints: labelPair(["Joint", "Joints"], ["Joint", "Joints"]),
+  redSpawnPoints: labelPair(["Spawn red", "Spawns red"], ["Red spawn", "Red spawns"]),
+  blueSpawnPoints: labelPair(["Spawn blue", "Spawns blue"], ["Blue spawn", "Blue spawns"]),
 };
 
 export function Inspector({ s }: { s: EditorState }) {
@@ -40,7 +50,7 @@ export function Inspector({ s }: { s: EditorState }) {
 
 function SelectionProps({ s }: { s: EditorState }) {
   const found = s.selection.map((r) => findItem(s.doc, r)).filter((f) => f !== null);
-  if (!found.length) return <div class="empty">Nada selecionado.</div>;
+  if (!found.length) return <div class="empty">{tr("Nada selecionado.", "Nothing selected.")}</div>;
   const lists = [...new Set(found.map((f) => f.list))];
   const traits = traitsOf(s.doc.fields);
   const geo = resolve(s.doc);
@@ -50,7 +60,7 @@ function SelectionProps({ s }: { s: EditorState }) {
       ? `${LIST_LABELS[found[0].list][0]} #${found[0].index}`
       : lists.length === 1
         ? `${found.length} ${LIST_LABELS[lists[0]][1].toLowerCase()}`
-        : `${found.length} objetos`;
+        : `${found.length} ${tr("objetos", "objects")}`;
 
   // Fields shared by every selected kind.
   let defs: FieldDef[] = ITEM_FIELDS[lists[0]];
@@ -73,34 +83,34 @@ function SelectionProps({ s }: { s: EditorState }) {
       <div class="insp-head">
         <h3>{title}</h3>
         <div class="insp-tools">
-          <button class="icon-btn" title="Trazer para a frente (Ctrl+Shift+])" onClick={() => moveSelection("front")}>
+          <button class="icon-btn" title={tr("Trazer para a frente (Ctrl+Shift+])", "Bring to front (Ctrl+Shift+])")} onClick={() => moveSelection("front")}>
             <BringToFront size={15} />
           </button>
-          <button class="icon-btn" title="Mandar para trás (Ctrl+Shift+[)" onClick={() => moveSelection("back")}>
+          <button class="icon-btn" title={tr("Mandar para trás (Ctrl+Shift+[)", "Send to back (Ctrl+Shift+[)")} onClick={() => moveSelection("back")}>
             <SendToBack size={15} />
           </button>
-          <button class="icon-btn" title="Duplicar (Ctrl+D)" onClick={duplicate}>
+          <button class="icon-btn" title={tr("Duplicar (Ctrl+D)", "Duplicate (Ctrl+D)")} onClick={duplicate}>
             <Copy size={15} />
           </button>
-          <button class="icon-btn" title="Espelhar ↔ (cópia que acompanha o original)" onClick={() => mirrorSelection("x")}>
+          <button class="icon-btn" title={tr("Espelhar ↔ (cópia que acompanha o original)", "Mirror ↔ (copy follows the original)")} onClick={() => mirrorSelection("x")}>
             <FlipHorizontal2 size={15} />
           </button>
-          <button class="icon-btn" title="Espelhar ↕ (cópia que acompanha o original)" onClick={() => mirrorSelection("y")}>
+          <button class="icon-btn" title={tr("Espelhar ↕ (cópia que acompanha o original)", "Mirror ↕ (copy follows the original)")} onClick={() => mirrorSelection("y")}>
             <FlipVertical2 size={15} />
           </button>
-          <button class="icon-btn" title="Espelhar nos 4 quadrantes" onClick={() => mirrorSelection("xy")}>
+          <button class="icon-btn" title={tr("Espelhar nos 4 quadrantes", "Mirror across 4 quadrants")} onClick={() => mirrorSelection("xy")}>
             <Grid2x2 size={15} />
           </button>
-          <button class="icon-btn" title="Repetir em linha (cópias que acompanham o original)" onClick={() => arraySelection("linear")}>
+          <button class="icon-btn" title={tr("Repetir em linha (cópias que acompanham o original)", "Repeat in a line (copies follow the original)")} onClick={() => arraySelection("linear")}>
             <Repeat size={15} />
           </button>
-          <button class="icon-btn" title="Repetir em círculo" onClick={() => arraySelection("polar")}>
+          <button class="icon-btn" title={tr("Repetir em círculo", "Repeat in a circle")} onClick={() => arraySelection("polar")}>
             <RotateCw size={15} />
           </button>
-          <button class="icon-btn" title="Extrair trait com as propriedades em comum" onClick={extractTrait}>
+          <button class="icon-btn" title={tr("Extrair trait com as propriedades em comum", "Extract trait with shared properties")} onClick={extractTrait}>
             <Tags size={15} />
           </button>
-          <button class="icon-btn danger" title="Apagar (Del)" onClick={deleteSelection}>
+          <button class="icon-btn danger" title={tr("Apagar (Del)", "Delete (Del)")} onClick={deleteSelection}>
             <Trash2 size={15} />
           </button>
         </div>
@@ -111,14 +121,14 @@ function SelectionProps({ s }: { s: EditorState }) {
           {lists.map((l) => {
             const count = found.filter((f) => f.list === l).length;
             return (
-              <button class="chip" title="Selecionar só estes" onClick={() => select(found.filter((f) => f.list === l).map((f) => refOf(l, f.item.id)))}>
+              <button class="chip" title={tr("Selecionar só estes", "Select only these")} onClick={() => select(found.filter((f) => f.list === l).map((f) => refOf(l, f.item.id)))}>
                 {count} {LIST_LABELS[l][count === 1 ? 0 : 1].toLowerCase()}
               </button>
             );
           })}
         </div>
       )}
-      {lists.length > 1 && defs.length === 0 && <p class="muted small pad">Esses tipos não têm propriedades em comum. Filtre por um tipo acima.</p>}
+      {lists.length > 1 && defs.length === 0 && <p class="muted small pad">{tr("Esses tipos não têm propriedades em comum. Filtre por um tipo acima.", "These types have no properties in common. Filter by a type above.")}</p>}
       {found.length === 1 && found[0].list === "segments" && <SegmentInfo s={s} index={found[0].index} />}
       {spawn ? (
         <SpawnProps s={s} list={lists[0] as "redSpawnPoints" | "blueSpawnPoints"} ids={found.map((f) => f.item.id)} />
@@ -157,7 +167,7 @@ function pushToTrait(s: EditorState, trait: string, key: string, value: Json, by
   let doc = setField(s.doc, "traits", { ...traits, [trait]: { ...obj(traits[trait]), [key]: value } });
   for (const [list, ids] of byList) doc = setProp(doc, list, ids, key, undefined);
   commit(doc);
-  toast(`"${key}" agora vem do trait "${trait}" (afeta todos que usam esse trait).`);
+  toast(tr(`"${key}" agora vem do trait "${trait}" (afeta todos que usam esse trait).`, `"${key}" now comes from trait "${trait}" (affects all objects using this trait).`));
 }
 
 function SegmentInfo({ s, index }: { s: EditorState; index: number }) {
@@ -171,11 +181,11 @@ function SegmentInfo({ s, index }: { s: EditorState; index: number }) {
   }
   return (
     <div class="info-row">
-      <span>Comprimento</span>
+      <span>{tr("Comprimento", "Length")}</span>
       <b>{Math.round(len * 10) / 10}</b>
       {g.curved && (
         <>
-          <span>Raio</span>
+          <span>{tr("Raio", "Radius")}</span>
           <b>{Math.round(g.radius * 10) / 10}</b>
         </>
       )}
@@ -196,11 +206,11 @@ function SpawnProps({ s, list, ids }: { s: EditorState; list: "redSpawnPoints" |
   return (
     <>
       {single && (
-        <Field label="Posição">
+        <Field label={tr("Posição", "Position")}>
           <VecInput value={single} onChange={(v) => commit(updateItems(s.doc, list, ids, () => v))} />
         </Field>
       )}
-      <Field label="Time">
+      <Field label={tr("Time", "Team")}>
         <Segmented
           value={list === "redSpawnPoints" ? "red" : "blue"}
           options={[
@@ -236,7 +246,7 @@ function RawJson({ list, id, value }: { s: EditorState; list: ListKey; id: numbe
   };
   return (
     <details class="raw" open={open} onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}>
-      <summary>JSON do objeto</summary>
+      <summary>{tr("JSON do objeto", "Object JSON")}</summary>
       <textarea
         class={`mono ${bad ? "bad" : ""}`}
         value={draft}
@@ -245,7 +255,7 @@ function RawJson({ list, id, value }: { s: EditorState; list: ListKey; id: numbe
         onBlur={apply}
         onKeyDown={(e) => e.key === "Enter" && (e.ctrlKey || e.metaKey) && apply()}
       />
-      <p class="muted small">Campos desconhecidos são mantidos. Ctrl+Enter aplica.</p>
+      <p class="muted small">{tr("Campos desconhecidos são mantidos. Ctrl+Enter aplica.", "Unknown fields are preserved. Ctrl+Enter applies.")}</p>
     </details>
   );
 }
@@ -291,7 +301,7 @@ export function Control({ def, value, traits, onChange }: { def: FieldDef; value
       return (
         <Select
           value={value === MIXED ? MIXED : typeof value === "string" ? value : ""}
-          options={[["", "(nenhum)"], ...traits.map((t): [string, string] => [t, t])]}
+          options={[["", tr("(nenhum)", "(none)")], ...traits.map((t): [string, string] => [t, t])]}
           onChange={(v) => onChange(v || undefined)}
         />
       );
@@ -311,17 +321,17 @@ function JointLength({ value, onChange }: { value: Shown<Json>; onChange: (v: Js
       <Segmented
         value={mode}
         options={[
-          ["auto", "Automático"],
-          ["fixed", "Fixo"],
-          ["range", "Faixa"],
+          ["auto", tr("Automático", "Auto")],
+          ["fixed", tr("Fixo", "Fixed")],
+          ["range", tr("Faixa", "Range")],
         ]}
         onChange={(m) => onChange(m === "auto" ? undefined : m === "fixed" ? 100 : [50, 100])}
       />
       {mode === "fixed" && <NumberInput label="↔" value={value as number} onChange={onChange} />}
       {mode === "range" && (
         <div class="vec">
-          <NumberInput label="mín" value={(value as number[])[0]} onChange={(n) => onChange([n, (value as number[])[1]])} />
-          <NumberInput label="máx" value={(value as number[])[1]} onChange={(n) => onChange([(value as number[])[0], n])} />
+          <NumberInput label={tr("mín", "min")} value={(value as number[])[0]} onChange={(n) => onChange([n, (value as number[])[1]])} />
+          <NumberInput label={tr("máx", "max")} value={(value as number[])[1]} onChange={(n) => onChange([(value as number[])[0], n])} />
         </div>
       )}
     </div>
@@ -335,8 +345,8 @@ function JointStrength({ value, onChange }: { value: Shown<Json>; onChange: (v: 
       <Segmented
         value={value === MIXED ? MIXED : rigid ? "rigid" : "spring"}
         options={[
-          ["rigid", "Rígido"],
-          ["spring", "Mola"],
+          ["rigid", tr("Rígido", "Rigid")],
+          ["spring", tr("Mola", "Spring")],
         ]}
         onChange={(m) => onChange(m === "rigid" ? undefined : 0.1)}
       />
@@ -352,7 +362,7 @@ function MapProps({ s }: { s: EditorState }) {
   return (
     <div class="inspector">
       <div class="insp-head">
-        <h3>Mapa</h3>
+        <h3>{tr("Mapa", "Map")}</h3>
       </div>
       {ROOT_SECTIONS.map((sec) => {
         const holder = sec.path ? doc.fields[sec.path] : doc.fields;
@@ -379,18 +389,22 @@ function MapProps({ s }: { s: EditorState }) {
         );
       })}
       <section class="insp-section">
-        <h4>Bola</h4>
-        <Field label="A bola é" hint='"disc0" usa o primeiro disco do mapa como bola.'>
+        <h4>{tr("Bola", "Ball")}</h4>
+        <Field label={tr("A bola é", "Ball mode")} hint={tr('"disc0" usa o primeiro disco do mapa como bola.', '"disc0" uses the first disc in the map as the ball.')}>
           <Segmented
             value={isDisc0(doc) ? "disc0" : "own"}
             options={[
               ["own", "ballPhysics"],
-              ["disc0", "Disco 0"],
+              ["disc0", tr("Disco 0", "Disc 0")],
             ]}
             onChange={(m) => setBallMode(m === "disc0")}
           />
         </Field>
-        <p class="muted small">{isDisc0(doc) ? "A bola é o primeiro disco da lista (fixo no topo das camadas)." : "Clique na bola no canvas para editar a física dela."}</p>
+        <p class="muted small">
+          {isDisc0(doc)
+            ? tr("A bola é o primeiro disco da lista (fixo no topo das camadas).", "The ball is the first disc in the list (pinned to the top of layers).")
+            : tr("Clique na bola no canvas para editar a física dela.", "Click the ball on the canvas to edit its physics.")}
+        </p>
       </section>
     </div>
   );
@@ -410,7 +424,7 @@ function setBallMode(disc0: boolean): void {
     doc = setField(doc, "ballPhysics", "disc0");
   } else {
     const first = doc.lists.discs[0];
-    if (!first) return toast("Não há disco para virar a bola.", "error");
+    if (!first) return toast(tr("Não há disco para virar a bola.", "There is no disc to turn into the ball."), "error");
     doc = setField(doc, "ballPhysics", { ...obj(first.v) });
     doc = { ...doc, lists: { ...doc.lists, discs: doc.lists.discs.slice(1) } };
   }
@@ -429,9 +443,9 @@ function BallProps({ s }: { s: EditorState }) {
   return (
     <div class="inspector">
       <div class="insp-head">
-        <h3>Bola</h3>
+        <h3>{tr("Bola", "Ball")}</h3>
       </div>
-      <p class="muted small pad">Definida em ballPhysics. Ela sempre começa no centro e ganha kick e score.</p>
+      <p class="muted small pad">{tr("Definida em ballPhysics. Ela sempre começa no centro e ganha kick e score.", "Defined in ballPhysics. Always starts at the center and gets kick and score.")}</p>
       {BALL_FIELDS.map((def) => {
         const e = effective(bp, def.key, traits, def.def);
         return (

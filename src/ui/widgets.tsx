@@ -7,6 +7,7 @@ import { colorJson, colorValue, FLAG_LABELS, FLAG_NAMES, flagBits, flagNames, he
 import type { Json } from "../doc/json";
 import { Flag } from "../vendor/kickr/shared/flags";
 import { beginGesture, endGesture } from "../editor/state";
+import { tr } from "../i18n";
 
 export const MIXED = Symbol("mixed");
 export type Shown<T> = T | typeof MIXED | undefined;
@@ -53,7 +54,7 @@ export function NumberInput(props: { value: Shown<number>; onChange: (v: number)
       <input
         class={bad ? "bad" : ""}
         value={text}
-        placeholder={value === MIXED ? "misto" : props.placeholder}
+        placeholder={value === MIXED ? tr("misto", "mixed") : props.placeholder}
         onFocus={() => (focused.current = true)}
         onBlur={() => {
           focused.current = false;
@@ -85,7 +86,7 @@ function Scrub(props: { value: number; step: number; integer?: boolean; label: s
   return (
     <span
       class="scrub"
-      title="Arraste para ajustar"
+      title={tr("Arraste para ajustar", "Drag to scrub")}
       onPointerDown={(e) => {
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
         start.current = { x: e.clientX, v: props.value };
@@ -116,7 +117,7 @@ export function TextInput(props: { value: Shown<string>; onChange: (v: string) =
     <input
       class="text"
       value={text}
-      placeholder={props.value === MIXED ? "misto" : props.placeholder}
+      placeholder={props.value === MIXED ? tr("misto", "mixed") : props.placeholder}
       onInput={(e) => setText((e.target as HTMLInputElement).value)}
       onBlur={() => text !== shown && props.onChange(text)}
       onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
@@ -136,7 +137,7 @@ export function Toggle(props: { value: Shown<boolean>; onChange: (v: boolean) =>
 export function Select(props: { value: Shown<string>; options: [string, string][]; onChange: (v: string) => void }) {
   return (
     <select class="select" value={props.value === MIXED ? "" : (props.value ?? "")} onChange={(e) => props.onChange((e.target as HTMLSelectElement).value)}>
-      {props.value === MIXED && <option value="">misto</option>}
+      {props.value === MIXED && <option value="">{tr("misto", "mixed")}</option>}
       {props.options.map(([v, l]) => (
         <option value={v}>{l}</option>
       ))}
@@ -174,7 +175,7 @@ export function FlagsInput(props: { value: Shown<Json>; onChange: (v: Json) => v
         all
       </button>
       <button class="ghost" onClick={() => props.onChange([])}>
-        nenhum
+        {tr("nenhum", "none")}
       </button>
     </div>
   );
@@ -195,8 +196,8 @@ export function ColorInput(props: { value: Shown<Json>; onChange: (v: Json) => v
       </label>
       <input
         class="text mono"
-        value={transparent ? "transparente" : text}
-        placeholder={mixed ? "misto" : "RRGGBB"}
+        value={transparent ? tr("transparente", "transparent") : text}
+        placeholder={mixed ? tr("misto", "mixed") : "RRGGBB"}
         onInput={(e) => setText((e.target as HTMLInputElement).value)}
         onBlur={() => {
           const v = parseInt(text.replace("#", ""), 16);
@@ -204,7 +205,7 @@ export function ColorInput(props: { value: Shown<Json>; onChange: (v: Json) => v
         }}
         onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
       />
-      <button class={`chip ${transparent ? "on" : ""}`} title="Transparente" onClick={() => props.onChange(transparent ? colorJson(0, like) : "transparent")}>
+      <button class={`chip ${transparent ? "on" : ""}`} title={tr("Transparente", "Transparent")} onClick={() => props.onChange(transparent ? colorJson(0, like) : "transparent")}>
         transp.
       </button>
     </div>
@@ -227,11 +228,16 @@ export function VecInput(props: { value: Shown<Json>; onChange: (v: Json) => voi
   );
 }
 
-const ORIGIN_TITLE: Record<Origin, string> = {
-  own: "Definido neste objeto",
-  trait: "Herdado do trait",
-  default: "Padrão do HaxBall",
-};
+function originTitle(o: Origin): string {
+  switch (o) {
+    case "own":
+      return tr("Definido neste objeto", "Set on this object");
+    case "trait":
+      return tr("Herdado do trait", "Inherited from trait");
+    case "default":
+      return tr("Padrão do HaxBall", "HaxBall default");
+  }
+}
 
 export function Field(props: {
   label: string;
@@ -246,18 +252,18 @@ export function Field(props: {
   return (
     <div class={`field ${props.wide ? "wide" : ""}`}>
       <div class="field-head">
-        <span class={`origin ${o === MIXED ? "mixed" : (o ?? "")}`} title={o && o !== MIXED ? ORIGIN_TITLE[o] : undefined} />
+        <span class={`origin ${o === MIXED ? "mixed" : (o ?? "")}`} title={o && o !== MIXED ? originTitle(o) : undefined} />
         <span class="field-label" title={props.hint}>
           {props.label}
         </span>
         <span class="field-actions">
           {props.onToTrait && (
-            <button class="icon-btn" title="Aplicar este valor ao trait" onClick={props.onToTrait}>
+            <button class="icon-btn" title={tr("Aplicar este valor ao trait", "Push this value to trait")} onClick={props.onToTrait}>
               <ArrowUp size={13} />
             </button>
           )}
           {props.onReset && (
-            <button class="icon-btn" title="Resetar (usar o valor herdado)" onClick={props.onReset}>
+            <button class="icon-btn" title={tr("Resetar (usar o valor herdado)", "Reset (use inherited value)")} onClick={props.onReset}>
               <RotateCcw size={13} />
             </button>
           )}

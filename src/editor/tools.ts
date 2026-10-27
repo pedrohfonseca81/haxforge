@@ -7,6 +7,7 @@ import { addItems, ballOffset, copyRefs, findItem, movableRefs, obj, pasteClip, 
 import { resolve } from "../doc/resolve";
 import { overlay } from "./draw";
 import { createSmart, isLinked, refsOf, shiftSmart, smartOf, smartSelected } from "../smart/smart";
+import { tr } from "../i18n";
 import { toast } from "./toast";
 import { curveThrough, hitTest, marquee, roundFor, segmentMid, snap, type Snap, type Vec } from "./geom";
 import { beginGesture, commit, ed, editor, endGesture, patch, prefs, requestDraw, select, view, type ToolId } from "./state";
@@ -184,7 +185,7 @@ export function pointerDown(e: PointerEvent, sx: number, sy: number): void {
     // Mirror copies follow their originals: they are not moved by hand.
     if (selection.some((r) => isLinked(smartOf(doc(), r)))) {
       select(selection);
-      toast("Cópias (espelho ou repetição) acompanham o original: mova o original, ou desvincule as cópias.");
+      toast(tr("Cópias (espelho ou repetição) acompanham o original: mova o original, ou desvincule as cópias.", "Copies (mirror or repeat) follow the original: move the original, or unlink the copies."));
       return;
     }
     beginGesture();
@@ -258,7 +259,7 @@ export function pointerDown(e: PointerEvent, sx: number, sy: number): void {
 
   if (tool === "text") {
     const s = snapAt(p, e);
-    const made = createSmart(doc(), "text", { text: "TEXTO", x: s.p[0], y: s.p[1] });
+    const made = createSmart(doc(), "text", { text: tr("TEXTO", "TEXT"), x: s.p[0], y: s.p[1] });
     commit(made.doc, refsOf(made.smart.items));
     setTool("select");
     return;
@@ -380,7 +381,7 @@ export function pointerMove(e: PointerEvent, sx: number, sy: number): void {
     let d = setProp(doc(), "segments", [f.item.id], "curveF", undefined);
     d = setProp(d, "segments", [f.item.id], "curve", Math.abs(curve) < 10 ? undefined : curve);
     commit(d);
-    overlay.label = { p, text: Math.abs(curve) < 10 ? "reto" : `curva ${curve}°` };
+    overlay.label = { p, text: Math.abs(curve) < 10 ? tr("reto", "straight") : `${tr("curva", "curve")} ${curve}°` };
     refreshOverlay();
     return;
   }
@@ -389,7 +390,7 @@ export function pointerMove(e: PointerEvent, sx: number, sy: number): void {
     const r = Math.max(1, Math.round(Math.hypot(p[0] - drag.center[0], p[1] - drag.center[1])));
     const f = findItem(doc(), drag.ref);
     if (f) commit(setProp(doc(), "discs", [f.item.id], "radius", r === 10 ? undefined : r));
-    overlay.label = { p, text: `raio ${r}` };
+    overlay.label = { p, text: `${tr("raio", "radius")} ${r}` };
     return;
   }
 
@@ -552,7 +553,7 @@ export const releaseSpace = () => {
 };
 
 function showTyped(): void {
-  overlay.label = { p: lastPointer, text: `${typed}▏  (comprimento<ângulo)` };
+  overlay.label = { p: lastPointer, text: `${typed}▏  (${tr("comprimento<ângulo", "length<angle")})` };
   requestDraw();
 }
 

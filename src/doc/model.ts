@@ -9,6 +9,7 @@ import { parseCst, type ContainerNode, type CstDoc, type Entry } from "./cst";
 import { isObject, type Json, type JsonObject } from "./json";
 import { assemble, patchObject, printValue, type OutEntry } from "./print";
 import { DEFAULT_STYLE, detectStyle, fresh, keyText, wrap, type Style } from "./style";
+import { tr } from "../i18n";
 
 export const LIST_KEYS = ["vertexes", "segments", "goals", "discs", "planes", "joints", "redSpawnPoints", "blueSpawnPoints"] as const;
 export type ListKey = (typeof LIST_KEYS)[number];
@@ -61,7 +62,7 @@ const emptyLists = (): Record<ListKey, Item[]> =>
 
 export function importText(text: string): { doc: Doc; source: Source } {
   const cst = parseCst(text);
-  if (cst.root.kind !== "object") throw new Error("o arquivo não contém um objeto de estádio");
+  if (cst.root.kind !== "object") throw new Error(tr("o arquivo não contém um objeto de estádio", "file does not contain a stadium object"));
   const style = detectStyle(cst, text);
   const origins = new Map<number, Entry>();
   const doc: Doc = { keys: [], fields: {}, lists: emptyLists(), smart: [] };
@@ -84,7 +85,7 @@ export function importText(text: string): { doc: Doc; source: Source } {
   return { doc, source: { cst, style, origins } };
 }
 
-export function newDoc(name = "Novo mapa"): Doc {
+export function newDoc(name = tr("Novo mapa", "New map")): Doc {
   return {
     keys: ["name", "width", "height", "spawnDistance", "bg", "vertexes", "segments", "goals", "discs", "planes"],
     fields: {

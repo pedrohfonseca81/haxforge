@@ -2,145 +2,149 @@
 
 # haxforge
 
-**Editor de mapas do HaxBall, visual e moderno, que roda no navegador.**<br>
-Crie do zero, gere um campo em segundos ou abra um `.hbs` e edite sem perder uma vírgula da formatação.
+**English** · [Português](README.pt-BR.md) · [Español](README.es.md)
 
-[**Abrir o editor →**](https://pedrohfonseca81.github.io/haxforge/)
+**A modern, visual HaxBall stadium editor that runs in your browser.**<br>
+Build from scratch, generate a field in seconds, or open any `.hbs` file and edit it without losing a single comma of formatting.
+
+[**Open the editor →**](https://pedrohfonseca81.github.io/haxforge/)
 
 [![Deploy](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml/badge.svg)](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml)
 
-<img src="docs/screenshots/editor.webp" alt="O editor com o Futsal x3 aberto: camadas à esquerda, canvas no centro, propriedades à direita" width="100%">
+<img src="docs/screenshots/editor.webp" alt="The editor with Futsal x3 open: layers on the left, canvas in the center, inspector on the right" width="100%">
 
 </div>
 
-## O que ele faz que outros editores não fazem
+## What it does that other editors don't
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-### Letreiro de verdade
+### True text banners
 
-Digite um texto e ele vira segmentos no campo. A fonte própria, **Haxforge Sans**, é feita de retas e **arcos nativos do HaxBall**: um "O" custa 4 vértices e 4 segmentos e fica liso em qualquer zoom. Rotação, curvatura (texto em arco), várias linhas, acentos, decorativo ou sólido.
+Type any text and it turns into segments on the field. The built-in font, **Haxforge Sans**, is made of lines and **native HaxBall arcs**: an "O" costs just 4 vertexes and 4 segments and stays smooth at any zoom. Rotation, bend (curved text along an arc), multi-line, accents, decorative or solid.
 
-**46 fontes** numa galeria com prévia do seu texto e o custo em segmentos: 15 de traço único (Hershey e EMS: sans, serif, cursivas, gótica, techno), 30 do Google Fonts (Bebas Neue, Anton, Press Start 2P, Pacifico…) e as suas, em TTF/OTF/WOFF.
+**46 fonts** in a gallery with live preview of your text and exact segment cost: 15 single-stroke fonts (Hershey and EMS: sans, serif, script, gothic, techno), 30 from Google Fonts (Bebas Neue, Anton, Press Start 2P, Pacifico…), plus your own TTF/OTF/WOFF uploads.
 
 </td>
-<td width="50%"><img src="docs/screenshots/letreiro.webp" alt="Letreiro HAXBOOK desenhado no campo de futsal"></td>
+<td width="50%"><img src="docs/screenshots/letreiro.webp" alt="HAXBOOK text banner drawn on the futsal field"></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/screenshots/playground.webp" alt="Playground com dois jogadores e estatísticas de rede"></td>
+<td width="50%"><img src="docs/screenshots/playground.webp" alt="Playground with two players and network stats"></td>
 <td width="50%" valign="top">
 
-### Jogue no mapa sem sair do editor
+### Play the map without leaving the editor
 
-O playground roda a física e o netcode do HaxBall (via [kickr](#créditos)) dentro do navegador, sem servidor. **`/extrapolation` e `/lag` funcionam de verdade**, com ping, frame confirmado e renderizado na tela. Pausa, frame a frame, câmera lenta, **rewind de 10 s**, lançador de bola com trajetória prevista e segundo jogador local.
+The playground runs HaxBall's exact physics and netcode (via [kickr](#credits)) right inside the browser, with no server. **`/extrapolation` and `/lag` actually work**, showing ping, confirmed frame, and rendered frame on screen. Pause, frame-by-frame step, slow motion, **10 s rewind**, ball launcher with predicted trajectory, and a local second player.
 
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
 
-### Edição ao vivo e linter de física
+### Live editing and physics linter
 
-Editor e jogo lado a lado: cada edição recarrega o mapa **sem parar a partida**. O linter acha **vãos por onde a bola ou os jogadores escapam** (com o raio real e as mesmas regras de colisão da física, incluindo pontas de segmento sem vértice), corpos nascendo dentro de paredes, segmentos repetidos e mais, com correção em um clique.
+Editor and game side-by-side: every edit reloads the map **without stopping the match**. The linter finds **gaps where the ball or players can escape** (using each body's actual radius and the exact physics collision rules, including bare segment ends without vertexes), bodies spawning inside walls, duplicate segments, and more, with one-click fixes.
 
 </td>
-<td width="50%"><img src="docs/screenshots/lado-a-lado.webp" alt="Editor e playground lado a lado, com a aba de problemas aberta"></td>
+<td width="50%"><img src="docs/screenshots/lado-a-lado.webp" alt="Editor and playground side-by-side, with the issues tab open"></td>
 </tr>
 </table>
 
-## Tudo que tem
+## Everything included
 
-**Arquivo sem perdas**
-- Importar um `.hbs` e exportar sem mexer devolve **o mesmo arquivo, byte a byte**: comentários, JSON5, traits, campos desconhecidos e formatação.
-- O que é novo imita o estilo do arquivo (minificado, um objeto por linha ou indentado). Comentários de índice (`/* 12 */`) são renumerados.
+**Lossless file handling**
+- Importing a `.hbs` and exporting without changes returns **the exact same file, byte for byte**: comments, JSON5 syntax, traits, unknown fields, and formatting.
+- New items match the file's existing style (minified, one object per line, or indented). Index comments (`/* 12 */`) are renumbered automatically.
 
-**Edição**
-- **Ferramentas:** segmento encadeado, vértice, disco, gol, plano, joint e spawns.
-- **Ajuste fino:** grid, ímã em vértices, pontos médios e interseções, guias de alinhamento, `Shift` trava 15°, e dá pra digitar o comprimento (`120` ou `120<45`). Curvar é arrastar o losango no meio do segmento.
-- **Camadas = ordem real dos arrays.** Reordenar remapeia os índices `v0/v1` e `d0/d1` sozinho.
-- **Inspector:** mostra de onde vem cada valor (objeto, trait ou padrão do HaxBall), com resetar e "aplicar ao trait". Campos aceitam conta (`370/2`) e arrastar o rótulo.
-- **Medidor do limite de 255** por tipo, sempre visível.
+**Editing**
+- **Tools:** chained segments, vertex, disc, goal, plane, joint, and spawn points.
+- **Precision:** grid, snap to vertexes, midpoints, and intersections, alignment guides, `Shift` locks 15° angles, and direct length/angle entry (`120` or `120<45`). Curve any segment by dragging its center diamond.
+- **Layers = real array order.** Reordering automatically remaps `v0/v1` and `d0/d1` indices.
+- **Inspector:** shows where every value comes from (object, trait, or HaxBall default), with reset and "push to trait". Numeric fields accept math expressions (`370/2`) and label scrubbing.
+- **255-limit meter** per object type, always visible.
 
-**Objetos inteligentes** (guardam parâmetros e se refazem no lugar)
-- **Gerador de campo:** Classic, Big, Futsal, Real Soccer e Hockey/arena, em sliders. Os cinco passam no linter sem vãos.
-- **Simetria ao vivo** (↔, ↕, 4 quadrantes) e **repetição** em linha ou em círculo: as cópias acompanham o original, e curvas, bias e times trocam do jeito certo.
-- **SVG e imagens:** importados e redesenhados com simplificação e arcos (um círculo custa 2 segmentos). PNG/JPG são traçados antes, com prévia.
-- **Padrões:** grama listrada, grade e pontos em arco.
-- **Otimizador:** une vértices repetidos, funde segmentos em linha reta, troca polilinhas por arcos (um anel de 36 segmentos vira 2) e mostra a economia antes de aplicar.
+**Smart objects** (store parameters and regenerate in place)
+- **Field generator:** Classic, Big, Futsal, Real Soccer, and Hockey/arena, controlled by sliders. All five pass the linter with zero gaps.
+- **Live symmetry** (↔, ↕, 4 quadrants) and linear or circular **repeat**: copies follow the original as you edit, flipping curves, bias, and teams properly.
+- **SVG and images:** imported and redrawn with simplification and arc fitting (a circle costs 2 segments). PNG/JPG images are traced first with a live preview.
+- **Patterns:** striped grass, grid, and dots along an arc.
+- **Optimizer:** merges duplicate vertexes, fuses collinear segments, replaces polylines with arcs (a 36-segment ring becomes 2), and previews the savings before applying.
 
-**Física à vista** (botão Física)
-- Cores por colisão: o que cada parede segura.
-- Espessura e lado do bias.
-- Parede inflada pra bola ou pra um time (onde o centro do corpo não chega).
+**Physics at a glance** (Physics menu)
+- Color by collision: see what each wall blocks.
+- Bias thickness and direction.
+- Inflated walls (Minkowski sum) for the ball or a team, showing where the center of a body cannot reach.
 
-**Projetos**
-- Autosave no navegador, undo ilimitado e **versões** com restauração.
-- **Link do mapa:** o `.hbs` comprimido no próprio link, sem servidor.
-- Os estádios do HaxBall já vêm como modelos.
+**Projects & Internationalization**
+- Browser autosave, unlimited undo, and named **versions** with one-click restore.
+- **Shareable map link:** compresses the `.hbs` directly into the URL hash, no server required.
+- Built-in HaxBall stadium templates ready to open.
+- **Bilingual UI (Portuguese / English):** defaults to Portuguese for users in Brazil and English everywhere else, with an instant toggle in the top bar.
 
-<div align="center"><img src="docs/screenshots/paleta.webp" alt="Paleta de comandos (Ctrl+K)" width="80%"></div>
+<div align="center"><img src="docs/screenshots/paleta.webp" alt="Command palette (Ctrl+K)" width="80%"></div>
 
-## Atalhos
+## Shortcuts
 
-| Tecla | Ação | Tecla | Ação |
+| Key | Action | Key | Action |
 |---|---|---|---|
-| `V` | Selecionar | `Ctrl+K` | Paleta de comandos |
-| `S` | Segmento | `Ctrl+Enter` | Jogar |
-| `X` | Vértice | `Ctrl+Shift+Enter` | Jogar lado a lado |
-| `D` | Disco | `Ctrl+Z` / `Ctrl+Shift+Z` | Desfazer / refazer |
-| `G` | Gol | `Ctrl+D` | Duplicar |
-| `P` | Plano | `Ctrl+E` | Exportar `.hbs` |
-| `J` | Joint | `Shift+1` | Enquadrar o mapa |
-| `R` / `B` | Spawn red / blue | `Espaço` + arrastar | Mover a vista |
-| `T` | Letreiro | `Alt` + arrastar | Duplicar arrastando |
+| `V` | Select | `Ctrl+K` | Command palette |
+| `S` | Segment | `Ctrl+Enter` | Play |
+| `X` | Vertex | `Ctrl+Shift+Enter` | Play side-by-side |
+| `D` | Disc | `Ctrl+Z` / `Ctrl+Shift+Z` | Undo / redo |
+| `G` | Goal | `Ctrl+D` | Duplicate |
+| `P` | Plane | `Ctrl+E` | Export `.hbs` |
+| `J` | Joint | `Shift+1` | Fit map to screen |
+| `R` / `B` | Red / blue spawn | `Space` + drag | Pan view |
+| `T` | Text banner | `Alt` + drag | Duplicate while dragging |
 
-No playground: setas/WASD andam e `X`/`Espaço` chutam. `P` pausa, `.` avança um frame e `Enter` abre os comandos (`/extrapolation`, `/lag`, `/speed`, `/reset`, `/p2`).
+In the playground: Arrows/WASD move and `X`/`Space` kick. `P` pauses, `.` steps one frame, and `Enter` opens commands (`/extrapolation`, `/lag`, `/speed`, `/reset`, `/p2`).
 
-## Agentes de IA (WebMCP)
+## AI Agents (WebMCP)
 
-O editor registra **25 ferramentas** para agentes de IA que rodam no navegador, via [WebMCP](https://webmachinelearning.github.io/webmcp/) (`document.modelContext.registerTool`, com suporte também ao formato anterior `navigator.modelContext`).
-- **O que um agente consegue:** ler o mapa e os problemas, gerar campo, desenhar, escrever letreiro, espelhar, otimizar, **simular chutes com a física real** e exportar.
-- **Controle:** cada ação do agente entra no histórico (`Ctrl+Z` desfaz) e aparece no painel do botão de robô, onde dá pra desligar.
-- WebMCP ainda é rascunho do W3C Community Group. Sem ele no navegador, nada muda.
+The editor registers **25 tools** for browser-based AI agents via [WebMCP](https://webmachinelearning.github.io/webmcp/) (`document.modelContext.registerTool`, also supporting the earlier `navigator.modelContext` draft).
+- **What an agent can do:** read the map and lint issues, generate fields, draw paths, write text banners, mirror objects, optimize geometry, **simulate shots using the real physics engine**, and export.
+- **User control:** every agent action is recorded in the undo history (`Ctrl+Z` undoes it) and listed in the robot button panel, where WebMCP access can be toggled off at any time.
+- WebMCP is a W3C Community Group draft. In browsers without it, nothing changes.
 
-## Desenvolvimento
+## Development
 
 ```sh
 bun install
 bun dev          # http://localhost:5174
-bun test         # round trip lossless, física, linter, objetos inteligentes, WebMCP
-bun run build    # site estático em dist/
+bun test         # lossless round-trip, physics, linter, smart objects, i18n, WebMCP
+bun run build    # static site in dist/
 ```
 
-Cada push na `main` publica o site no GitHub Pages ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)). O plano e as decisões de projeto estão em [PLAN.md](PLAN.md).
+Every push to `main` deploys the site to GitHub Pages ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)). Design notes and architecture decisions are documented in [PLAN.md](PLAN.md).
 
 <details>
-<summary>Organização do código</summary>
+<summary>Code structure</summary>
 
-- `src/doc/`: o documento.
-  - `cst.ts`: parser JSON5 com sintaxe concreta.
-  - `print.ts` e `style.ts`: impressão sem perdas.
-  - `model.ts` e `ops.ts`: modelo e edições, com remapeamento de índices.
-  - `lint.ts`, `resolve.ts`, `fields.ts` e `bodies.ts`.
-- `src/editor/`: estado e histórico, ferramentas, snap, canvas, ações, versões.
-- `src/smart/`: objetos inteligentes.
-  - `text.ts` e `font.ts`: letreiro.
-  - `field.ts`: gerador de campo.
-  - `svg.ts` e `trace.ts`: desenhos e imagens.
-  - `pattern.ts`, `optimize.ts` e `smart.ts`.
-- `src/play/`: playground (sala e cliente kickr numa rede simulada, com relógio virtual e rewind).
-- `src/agent/`: ferramentas WebMCP.
-- `src/persist/`: IndexedDB (projetos, versões, fontes) e link do mapa.
-- `src/ui/`: telas e painéis em Preact.
-- `src/vendor/kickr/`: motor do kickr (física idêntica à do HaxBall, bit a bit). Veja `VENDOR.md`.
+- `src/doc/`: document layer.
+  - `cst.ts`: concrete syntax tree JSON5 parser.
+  - `print.ts` & `style.ts`: lossless printer and formatting detector.
+  - `model.ts` & `ops.ts`: document model and operations with automatic index remapping.
+  - `lint.ts`, `resolve.ts`, `fields.ts`, and `bodies.ts`.
+- `src/editor/`: state and undo history, tools, snapping, canvas renderer, actions, versions.
+- `src/smart/`: smart objects.
+  - `text.ts` & `font.ts`: text banners and built-in arc font.
+  - `field.ts`: parametric field generator.
+  - `svg.ts` & `trace.ts`: SVG import and raster image tracing.
+  - `pattern.ts`, `optimize.ts`, and `smart.ts`.
+- `src/play/`: playground (kickr room and client over a simulated network, with virtual clock and rewind).
+- `src/agent/`: WebMCP agent tools.
+- `src/persist/`: IndexedDB storage (projects, versions, fonts) and compressed URL sharing.
+- `src/ui/`: Preact screens and panels.
+- `src/i18n.ts`: internationalization (Brazil -> `pt`, other countries -> `en`).
+- `src/vendor/kickr/`: kickr engine (bit-exact HaxBall physics). See `VENDOR.md`.
 
 </details>
 
-## Créditos
+## Credits
 
-- Física, regras, netcode e renderer clássico vêm do **kickr**, uma reimplementação do HaxBall conferida bit a bit contra o original.
-- Os estádios-modelo foram exportados do próprio HaxBall. O **Futsal x3** é do Bazinga (HaxMaps).
-- As fontes de traço único são as **Hershey** (Dr. A. V. Hershey, U.S. National Bureau of Standards) e as **EMS** da Evil Mad Scientist (SIL OFL), pelo pacote [hersheytext](https://github.com/techninja/hersheytextjs). Avisos completos em [`src/smart/STROKE_FONTS.md`](src/smart/STROKE_FONTS.md). As fontes do Google Fonts vêm do CDN do [Fontsource](https://fontsource.org).
-- HaxBall é de Mario Carbajal (basro). O haxforge é um projeto independente de fã.
+- Physics, rules, netcode, and classic renderer come from **kickr**, a bit-for-bit verified HaxBall reimplementation.
+- Template stadiums were exported from HaxBall itself. **Futsal x3** is by Bazinga (HaxMaps).
+- Single-stroke fonts are **Hershey** (Dr. A. V. Hershey, U.S. National Bureau of Standards) and **EMS** by Evil Mad Scientist (SIL OFL), via [hersheytext](https://github.com/techninja/hersheytextjs). Full notices in [`src/smart/STROKE_FONTS.md`](src/smart/STROKE_FONTS.md). Google Fonts are loaded from the [Fontsource](https://fontsource.org) CDN.
+- HaxBall is by Mario Carbajal (basro). haxforge is an independent fan project.

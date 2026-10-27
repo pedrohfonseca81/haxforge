@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { lint } from "./lint";
+import { setLang } from "../i18n";
 import { importText, toJson, type Doc } from "./model";
 import { compileStadium } from "../vendor/kickr/shared/stadium";
 import { stepWorld } from "../vendor/kickr/shared/physics";
@@ -61,11 +62,14 @@ describe("lint", () => {
   });
 
   test("a spawn inside a wall is reported", () => {
+    setLang("pt");
     const d = box(0, null);
     const text = JSON.stringify(lint(d).map((i) => i.text));
     expect(text).not.toContain("começa dentro");
     const moved = importText(classic.replace('"name": "Classic",', '"name": "Classic", "redSpawnPoints": [[-415, 0]],')).doc;
     expect(lint(moved).some((i) => i.text.includes("jogador red começa dentro"))).toBe(true);
+    setLang("en");
+    expect(lint(moved).some((i) => i.text.includes("red player starts inside"))).toBe(true);
   });
 
   test("zero-length and duplicated segments have quick fixes", () => {

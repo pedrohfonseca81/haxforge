@@ -8,6 +8,7 @@ import type { Doc } from "../doc/model";
 import { deleteRefs, obj, refOf, updateItems, type Ref } from "../doc/ops";
 import { resolve } from "../doc/resolve";
 import { segmentMid } from "../editor/geom";
+import { tr } from "../i18n";
 import { refsOf } from "./smart";
 
 export interface OptimizeOptions {
@@ -63,7 +64,7 @@ export function optimize(input: Doc, opts: OptimizeOptions): OptimizeResult {
         return v0 === o.v0 && v1 === o.v1 ? v : { ...o, v0, v1 };
       });
       doc = deleteRefs(doc, [...target.keys()].map((i) => refOf("vertexes", doc.lists.vertexes[i].id)));
-      steps.push(`${target.size} vértice(s) repetido(s) unificado(s)`);
+      steps.push(tr(`${target.size} vértice(s) repetido(s) unificado(s)`, `${target.size} duplicate vertex(es) merged`));
     }
   }
 
@@ -81,7 +82,7 @@ export function optimize(input: Doc, opts: OptimizeOptions): OptimizeResult {
     }
     if (dups.length) {
       doc = deleteRefs(doc, dups);
-      steps.push(`${dups.length} segmento(s) repetido(s) removido(s)`);
+      steps.push(tr(`${dups.length} segmento(s) repetido(s) removido(s)`, `${dups.length} duplicate segment(s) removed`));
     }
   }
 
@@ -93,14 +94,14 @@ export function optimize(input: Doc, opts: OptimizeOptions): OptimizeResult {
       doc = m;
       merged++;
     }
-    if (merged) steps.push(`${merged} par(es) de segmentos colineares fundido(s)`);
+    if (merged) steps.push(tr(`${merged} par(es) de segmentos colineares fundido(s)`, `${merged} collinear segment pair(s) merged`));
   }
 
   if (opts.fitArcs) {
     const r = fitArcs(doc, free, opts.tolerance);
     if (r.count) {
       doc = r.doc;
-      steps.push(`${r.count} trecho(s) de polilinha trocado(s) por arcos`);
+      steps.push(tr(`${r.count} trecho(s) de polilinha trocado(s) por arcos`, `${r.count} polyline run(s) replaced with arcs`));
     }
   }
 
@@ -118,7 +119,7 @@ export function optimize(input: Doc, opts: OptimizeOptions): OptimizeResult {
     });
     if (loose.length) {
       doc = deleteRefs(doc, loose);
-      steps.push(`${loose.length} vértice(s) solto(s) sem colisão removido(s)`);
+      steps.push(tr(`${loose.length} vértice(s) solto(s) sem colisão removido(s)`, `${loose.length} non-colliding loose vertex(es) removed`));
     }
   }
 

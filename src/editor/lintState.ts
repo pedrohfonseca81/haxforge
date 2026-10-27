@@ -2,6 +2,7 @@
 // and the canvas read the result from here.
 import { lint, type Issue } from "../doc/lint";
 import type { Doc } from "../doc/model";
+import { lang } from "../i18n";
 import { Store } from "../vendor/kickr/client/store";
 import { editor, requestDraw } from "./state";
 
@@ -22,5 +23,11 @@ editor.subscribe((s) => {
     issues.set({ doc, list: lint(doc) });
     requestDraw();
   }, 250);
+});
+lang.subscribe(() => {
+  const s = editor.get();
+  if (!s) return;
+  issues.set({ doc: s.doc, list: lint(s.doc) });
+  requestDraw();
 });
 focusedIssue.subscribe(requestDraw);

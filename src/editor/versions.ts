@@ -2,6 +2,7 @@
 // and every few minutes of editing) and named ones, any of which can be
 // restored. Restoring first snapshots the current state, so nothing is lost.
 import { exportText, importText } from "../doc/model";
+import { tr } from "../i18n";
 import { deleteVersion, listVersions, newProjectId, putVersion, type Version } from "../persist/db";
 import { Store } from "../vendor/kickr/client/store";
 import { editor, openDoc, view } from "./state";
@@ -38,7 +39,7 @@ export async function snapshot(label = ""): Promise<Version | null> {
 export async function restore(v: Version): Promise<void> {
   const s = editor.get();
   if (!s) return;
-  await snapshot("Antes de restaurar");
+  await snapshot(tr("Antes de restaurar", "Before restore"));
   const { doc, source } = importText(v.text);
   openDoc(s.projectId, doc, source, s.createdAt);
   view.needsFit = false;

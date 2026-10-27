@@ -10,11 +10,14 @@ import { isDisc0, moveItems, obj, refOf } from "../doc/ops";
 import { LIMIT } from "../doc/resolve";
 import { commit, ed, select, type EditorState } from "../editor/state";
 import { toggleHidden, toggleLocked } from "../editor/actions";
+import { lang, tr } from "../i18n";
+import { useStore } from "../vendor/kickr/client/store";
 import { LIST_LABELS } from "./Inspector";
 
 const LIMITED = new Set<ListKey>(["vertexes", "segments", "discs", "planes", "goals"]);
 
 export function Layers({ s }: { s: EditorState }) {
+  const l = useStore(lang);
   const [closed, setClosed] = useState<Set<ListKey>>(() => new Set(["vertexes"]));
   const selected = new Set(s.selection);
   const disc0 = isDisc0(s.doc);
@@ -22,7 +25,7 @@ export function Layers({ s }: { s: EditorState }) {
     <div class={`layer-row ${selected.has("ball") ? "sel" : ""}`} onClick={() => select(["ball"])}>
       <span class="idx">0</span>
       <span class="swatch-dot" style={{ background: "#fff" }} />
-      <span class="desc">Bola (ballPhysics)</span>
+      <span class="desc">{tr("Bola (ballPhysics)", "Ball (ballPhysics)")}</span>
     </div>
   );
 
@@ -32,7 +35,7 @@ export function Layers({ s }: { s: EditorState }) {
         <div class="layer-group">
           <div class="layer-head static">
             <Sparkles size={14} />
-            <span>Objetos inteligentes</span>
+            <span>{tr("Objetos inteligentes", "Smart objects")}</span>
             <span class="count">{s.doc.smart.length}</span>
           </div>
           <div class="layer-list">
@@ -41,12 +44,22 @@ export function Layers({ s }: { s: EditorState }) {
               const on = refs.length > 0 && refs.every((r) => selected.has(r));
               const cost = smartCost(sm);
               const label = {
-                text: () => `Letreiro “${String(sm.params.text ?? "").split("\n")[0].slice(0, 18)}”`,
-                field: () => `Campo ${String(sm.params.template ?? "classic")}`,
-                shape: () => "Desenho (SVG/imagem)",
-                pattern: () => `Padrão ${({ stripes: "listras", grid: "grade", dots: "pontos" } as Record<string, string>)[String(sm.params.type ?? "stripes")]}`,
-                mirror: () => `Espelho ${sm.params.axis === "xy" ? "4×" : sm.params.axis === "y" ? "↕" : "↔"} de ${refsOf(sm.source).length} itens`,
-                array: () => `Repetição ${sm.params.mode === "polar" ? "em círculo" : "em linha"} ×${sm.params.count ?? 3}`,
+                text: () => `${tr("Letreiro", "Banner")} “${String(sm.params.text ?? "").split("\n")[0].slice(0, 18)}”`,
+                field: () => `${tr("Campo", "Field")} ${String(sm.params.template ?? "classic")}`,
+                shape: () => tr("Desenho (SVG/imagem)", "Drawing (SVG/image)"),
+                pattern: () =>
+                  `${tr("Padrão", "Pattern")} ${
+                    (
+                      {
+                        stripes: tr("listras", "stripes"),
+                        grid: tr("grade", "grid"),
+                        dots: tr("pontos", "dots"),
+                      } as Record<string, string>
+                    )[String(sm.params.type ?? "stripes")]
+                  }`,
+                mirror: () =>
+                  `${tr("Espelho", "Mirror")} ${sm.params.axis === "xy" ? "4×" : sm.params.axis === "y" ? "↕" : "↔"} ${tr("de", "of")} ${refsOf(sm.source).length} ${tr("itens", "items")}`,
+                array: () => `${tr("Repetição", "Repeat")} ${sm.params.mode === "polar" ? tr("em círculo", "in circle") : tr("em linha", "in line")} ×${sm.params.count ?? 3}`,
               }[sm.kind]();
               return (
                 <div class={`layer-row ${on ? "sel" : ""}`} onClick={() => select(refs)} key={sm.id}>
@@ -99,6 +112,7 @@ export function Layers({ s }: { s: EditorState }) {
                     hidden={s.hidden.has(refOf(list, it.id))}
                     locked={s.locked.has(refOf(list, it.id))}
                     pinned={list === "discs" && disc0 && i === 0}
+                    lang={l}
                   />
                 ))}
               </div>
@@ -112,7 +126,7 @@ export function Layers({ s }: { s: EditorState }) {
 
 let dragging: { list: ListKey; ids: number[] } | null = null;
 
-const Row = memo(function Row(p: { list: ListKey; item: Item; index: number; position: number; selected: boolean; hidden: boolean; locked: boolean; pinned: boolean }) {
+const Row = memo(function Row(p: { list: ListKey; item: Item; index: number; position: number; selected: boolean; hidden: boolean; locked: boolean; pinned: boolean; lang: string }) {
   const ref = refOf(p.list, p.item.id);
   const el = useRef<HTMLDivElement>(null);
   const [drop, setDrop] = useState<"" | "above" | "below">("");
@@ -153,14 +167,14 @@ const Row = memo(function Row(p: { list: ListKey; item: Item; index: number; pos
         dragging = null;
       }}
       onDragEnd={() => (dragging = null)}
-      title={p.pinned ? "A bola (disc0) fica sempre em primeiro" : undefined}
+      title={p.pinned ? tr("A bola (disc0) fica sempre em primeiro", "The ball (disc0) always stays first") : undefined}
     >
       <span class="idx">{p.index}</span>
       <Describe list={p.list} v={p.item.v} />
       <span class="row-actions">
         <button
           class={`icon-btn ${p.hidden ? "on" : ""}`}
-          title={p.hidden ? "Mostrar" : "Ocultar no editor"}
+          title={p.hidden ? tr("Mostrar", "Show") : tr("Ocultar no editor", "Hide in editor")}
           onClick={(e) => {
             e.stopPropagation();
             toggleHidden([ref]);
@@ -170,7 +184,7 @@ const Row = memo(function Row(p: { list: ListKey; item: Item; index: number; pos
         </button>
         <button
           class={`icon-btn ${p.locked ? "on" : ""}`}
-          title={p.locked ? "Destravar" : "Travar (não seleciona no canvas)"}
+          title={p.locked ? tr("Destravar", "Unlock") : tr("Travar (não seleciona no canvas)", "Lock (cannot select on canvas)")}
           onClick={(e) => {
             e.stopPropagation();
             toggleLocked([ref]);
@@ -197,7 +211,7 @@ function Describe({ list, v }: { list: ListKey; v: unknown }) {
       text = `(${n(o.x)}, ${n(o.y)})`;
       break;
     case "segments":
-      text = `v${n(o.v0)} → v${n(o.v1)}${typeof o.curve === "number" && o.curve ? ` · ${n(o.curve)}°` : ""}${o.vis === false ? " · invisível" : ""}`;
+      text = `v${n(o.v0)} → v${n(o.v1)}${typeof o.curve === "number" && o.curve ? ` · ${n(o.curve)}°` : ""}${o.vis === false ? ` · ${tr("invisível", "invisible")}` : ""}`;
       break;
     case "discs":
       text = `${pt(o.pos ?? [0, 0])}${typeof o.radius === "number" ? ` · r${n(o.radius)}` : ""}`;

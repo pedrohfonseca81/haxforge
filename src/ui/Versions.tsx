@@ -7,6 +7,7 @@ import { toast } from "../editor/toast";
 import { restore, snapshot } from "../editor/versions";
 import { drawThumb } from "../editor/thumb";
 import { deleteVersion, listVersions, type Version } from "../persist/db";
+import { lang, locale, tr } from "../i18n";
 import { useStore } from "../vendor/kickr/client/store";
 
 function Thumb({ text }: { text: string }) {
@@ -23,9 +24,10 @@ function Thumb({ text }: { text: string }) {
   return <canvas ref={ref} class="version-thumb" />;
 }
 
-const when = (t: number) => new Date(t).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const when = (t: number) => new Date(t).toLocaleString(locale(), { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
 export function VersionsDialog({ onClose }: { onClose: () => void }) {
+  useStore(lang);
   const s = useStore(editor);
   const [list, setList] = useState<Version[] | null>(null);
   const [label, setLabel] = useState("");
@@ -38,13 +40,18 @@ export function VersionsDialog({ onClose }: { onClose: () => void }) {
     <div class="modal-back" onPointerDown={onClose}>
       <div class="dialog wide" onPointerDown={(e) => e.stopPropagation()}>
         <h3>
-          <History size={16} /> Versões
+          <History size={16} /> {tr("Versões", "Versions")}
         </h3>
-        <p class="muted small">Snapshots automáticos ao abrir o projeto e a cada 5 minutos de edição, mais as versões que você nomear. Restaurar guarda o estado atual antes.</p>
+        <p class="muted small">
+          {tr(
+            "Snapshots automáticos ao abrir o projeto e a cada 5 minutos de edição, mais as versões que você nomear. Restaurar guarda o estado atual antes.",
+            "Automatic snapshots when opening the project and every 5 minutes of editing, plus any versions you name. Restoring saves the current state first.",
+          )}
+        </p>
         <div class="version-new">
           <input
             class="text"
-            placeholder="Nome da versão (ex.: antes de mudar as redes)"
+            placeholder={tr("Nome da versão (ex.: antes de mudar as redes)", "Version name (e.g. before changing the nets)")}
             value={label}
             onInput={(e) => setLabel((e.target as HTMLInputElement).value)}
             onKeyDown={(e) => e.key === "Enter" && (e.currentTarget.nextElementSibling as HTMLButtonElement)?.click()}
@@ -52,22 +59,22 @@ export function VersionsDialog({ onClose }: { onClose: () => void }) {
           <button
             class="btn primary"
             onClick={async () => {
-              await snapshot(label.trim() || "Versão salva");
+              await snapshot(label.trim() || tr("Versão salva", "Saved version"));
               setLabel("");
               reload();
-              toast("Versão salva");
+              toast(tr("Versão salva", "Version saved"));
             }}
           >
-            Salvar versão
+            {tr("Salvar versão", "Save version")}
           </button>
         </div>
         <div class="versions">
-          {list?.length === 0 && <div class="empty">Nenhuma versão ainda.</div>}
+          {list?.length === 0 && <div class="empty">{tr("Nenhuma versão ainda.", "No versions yet.")}</div>}
           {list?.map((v) => (
             <div class="version">
               <Thumb text={v.text} />
               <div class="version-info">
-                <b>{v.label || "Automática"}</b>
+                <b>{v.label || tr("Automática", "Auto")}</b>
                 <span class="muted small">{when(v.createdAt)}</span>
               </div>
               <button
@@ -75,14 +82,14 @@ export function VersionsDialog({ onClose }: { onClose: () => void }) {
                 onClick={async () => {
                   await restore(v);
                   onClose();
-                  toast(`Versão de ${when(v.createdAt)} restaurada (o estado anterior foi guardado).`);
+                  toast(tr(`Versão de ${when(v.createdAt)} restaurada (o estado anterior foi guardado).`, `Version from ${when(v.createdAt)} restored (previous state was saved).`));
                 }}
               >
-                <RotateCcw size={13} /> Restaurar
+                <RotateCcw size={13} /> {tr("Restaurar", "Restore")}
               </button>
               <button
                 class="icon-btn danger"
-                title="Apagar versão"
+                title={tr("Apagar versão", "Delete version")}
                 onClick={async () => {
                   await deleteVersion(v.id);
                   reload();

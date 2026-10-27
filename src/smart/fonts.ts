@@ -6,6 +6,7 @@
 // Outline fonts (Google and uploaded) are parsed with opentype.js and kept in
 // the browser; the map only stores the name.
 import type opentype from "opentype.js";
+import { tr } from "../i18n";
 import { putFont } from "../persist/db";
 import { Store } from "../vendor/kickr/client/store";
 
@@ -15,28 +16,39 @@ export const fontNames = new Store<string[]>([]);
 
 export class MissingFont extends Error {
   constructor(readonly font: string) {
-    super(`a fonte "${fontLabel(font)}" não está carregada neste navegador`);
+    super(tr(`a fonte "${fontLabel(font)}" não está carregada neste navegador`, `font "${fontLabel(font)}" is not loaded in this browser`));
   }
 }
 
 // ---- Single-stroke fonts ------------------------------------------------------------------
 
+const strokeEntry = (id: string, pt: string, en = pt): [string, string] => {
+  const pair = [id, pt] as [string, string];
+  if (pt !== en) {
+    Object.defineProperty(pair, 1, {
+      get: () => tr(pt, en),
+      enumerable: true,
+    });
+  }
+  return pair;
+};
+
 export const STROKE_FONTS: [id: string, name: string][] = [
-  ["hershey-sans", "Hershey Sans"],
-  ["hershey-sans-med", "Hershey Sans Médio"],
-  ["hershey-serif", "Hershey Serif"],
-  ["hershey-serif-italic", "Hershey Serif Itálico"],
-  ["hershey-serif-bold", "Hershey Serif Negrito"],
-  ["hershey-script", "Hershey Script"],
-  ["hershey-script-med", "Hershey Script Médio"],
-  ["hershey-gothic", "Gótica"],
-  ["ems-allure", "Allure (manuscrita)"],
-  ["ems-elfin", "Elfin"],
-  ["ems-felix", "Felix"],
-  ["ems-nixish", "Nixish"],
-  ["ems-osmotron", "Osmotron"],
-  ["ems-readability", "Readability"],
-  ["ems-tech", "Tech"],
+  strokeEntry("hershey-sans", "Hershey Sans"),
+  strokeEntry("hershey-sans-med", "Hershey Sans Médio", "Hershey Sans Medium"),
+  strokeEntry("hershey-serif", "Hershey Serif"),
+  strokeEntry("hershey-serif-italic", "Hershey Serif Itálico", "Hershey Serif Italic"),
+  strokeEntry("hershey-serif-bold", "Hershey Serif Negrito", "Hershey Serif Bold"),
+  strokeEntry("hershey-script", "Hershey Script"),
+  strokeEntry("hershey-script-med", "Hershey Script Médio", "Hershey Script Medium"),
+  strokeEntry("hershey-gothic", "Gótica", "Gothic"),
+  strokeEntry("ems-allure", "Allure (manuscrita)", "Allure (handwritten)"),
+  strokeEntry("ems-elfin", "Elfin"),
+  strokeEntry("ems-felix", "Felix"),
+  strokeEntry("ems-nixish", "Nixish"),
+  strokeEntry("ems-osmotron", "Osmotron"),
+  strokeEntry("ems-readability", "Readability"),
+  strokeEntry("ems-tech", "Tech"),
 ];
 
 export interface StrokeGlyph {
@@ -133,7 +145,7 @@ export async function ensureFont(name: string): Promise<void> {
   }
   if (name.startsWith("google:")) {
     const res = await fetch(googleUrl(name.slice(7)));
-    if (!res.ok) throw new Error(`não consegui baixar a fonte ${fontLabel(name)} (${res.status})`);
+    if (!res.ok) throw new Error(tr(`não consegui baixar a fonte ${fontLabel(name)} (${res.status})`, `could not download font ${fontLabel(name)} (${res.status})`));
     const data = await res.arrayBuffer();
     await addFont(data, name, name);
     await putFont({ name, data }).catch(() => undefined);

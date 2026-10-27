@@ -4,6 +4,7 @@
 // too often to re-render panels.
 import { exportText, type Doc, type Source } from "../doc/model";
 import { findItem, type Ref } from "../doc/ops";
+import { tr } from "../i18n";
 import { putProject } from "../persist/db";
 import { refsOf, smartSelected, syncMirrors } from "../smart/smart";
 import { Store } from "../vendor/kickr/client/store";
@@ -216,7 +217,7 @@ export async function saveNow(): Promise<void> {
   try {
     await putProject({
       id: s.projectId,
-      name: typeof doc.fields.name === "string" ? doc.fields.name : "Sem nome",
+      name: typeof doc.fields.name === "string" ? doc.fields.name : tr("Sem nome", "Untitled"),
       text: exportText(doc, s.source),
       createdAt: s.createdAt,
       updatedAt: Date.now(),

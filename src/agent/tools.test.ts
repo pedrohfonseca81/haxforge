@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { newDoc } from "../doc/model";
 import { editor, openDoc } from "../editor/state";
+import { setLang } from "../i18n";
 import { TOOLS } from "./tools";
 
 // A browser exposing the current WebMCP draft.
@@ -22,6 +23,7 @@ const { enableAgents, agentLog, agentStatus } = await import("./webmcp");
 const call = (name: string, input: object = {}) => registered.get(name)!.execute(input) as Promise<Record<string, unknown> & { error?: string }>;
 
 beforeEach(() => {
+  setLang("pt");
   enableAgents(true);
   openDoc("test", newDoc("Teste"), null);
 });

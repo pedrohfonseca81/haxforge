@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { Search } from "lucide-preact";
 import type { Command } from "../editor/actions";
+import { tr } from "../i18n";
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
@@ -35,7 +36,7 @@ export function Palette({ commands, onClose }: { commands: Command[]; onClose: (
             ref={input}
             autofocus
             value={q}
-            placeholder="Buscar ação…"
+            placeholder={tr("Buscar ação…", "Search action…")}
             onInput={(e) => setQ((e.target as HTMLInputElement).value)}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") {
@@ -50,7 +51,7 @@ export function Palette({ commands, onClose }: { commands: Command[]; onClose: (
           />
         </div>
         <div class="palette-list">
-          {list.length === 0 && <div class="empty">Nada encontrado.</div>}
+          {list.length === 0 && <div class="empty">{tr("Nada encontrado.", "Nothing found.")}</div>}
           {list.map((c, j) => (
             <button class={`palette-item ${j === i ? "on" : ""}`} onPointerEnter={() => setI(j)} onClick={() => run(c)}>
               <span class="group">{c.group}</span>

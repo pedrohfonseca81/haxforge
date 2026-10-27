@@ -247,8 +247,12 @@ describe("fontes de traço", () => {
   });
 
   test("a missing stroke font is reported, then works once loaded", async () => {
+    const { setLang } = await import("../i18n");
     const fonts = await import("./fonts");
+    setLang("pt");
     expect(fonts.fontLabel("stroke:hershey-gothic")).toBe("Gótica");
+    setLang("en");
+    expect(fonts.fontLabel("stroke:hershey-gothic")).toBe("Gothic");
     expect(fonts.fontLabel("google:bebas-neue")).toBe("Bebas Neue");
     expect(fonts.fontReady("")).toBe(true);
   });

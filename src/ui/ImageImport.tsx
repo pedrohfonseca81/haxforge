@@ -6,6 +6,7 @@ import { commit, ed, view } from "../editor/state";
 import { toast } from "../editor/toast";
 import { createSmart, refsOf } from "../smart/smart";
 import { loopsToSvg, maskFromPixels, traceMask, type Mask } from "../smart/trace";
+import { lang, tr } from "../i18n";
 import { Store, useStore } from "../vendor/kickr/client/store";
 
 // A raster image waiting for the trace dialog.
@@ -17,8 +18,8 @@ function insertSvg(svg: string): void {
   const made = createSmart(ed().doc, "shape", { svg, x: Math.round(view.cam.x), y: Math.round(view.cam.y), size });
   commit(made.doc, refsOf(made.smart.items));
   const n = refsOf(made.smart.items).length;
-  if (!n) toast("Não encontrei contornos nesse desenho.", "error");
-  else toast("Desenho importado. Ajuste tamanho e detalhe no painel (menos detalhe = menos segmentos).");
+  if (!n) toast(tr("Não encontrei contornos nesse desenho.", "No outlines found in this drawing."), "error");
+  else toast(tr("Desenho importado. Ajuste tamanho e detalhe no painel (menos detalhe = menos segmentos).", "Drawing imported. Adjust size and detail in the panel (less detail = fewer segments)."));
 }
 
 export async function importImageFile(file: File): Promise<void> {
@@ -26,15 +27,16 @@ export async function importImageFile(file: File): Promise<void> {
   const url = URL.createObjectURL(file);
   const img = new Image();
   img.onload = () => pendingImage.set({ name: file.name, img });
-  img.onerror = () => toast("Não consegui abrir essa imagem.", "error");
+  img.onerror = () => toast(tr("Não consegui abrir essa imagem.", "Could not open this image."), "error");
   img.src = url;
 }
 
 export function ImportButton() {
+  useStore(lang);
   const input = useRef<HTMLInputElement>(null);
   return (
     <>
-      <button class="tool" title="Importar SVG ou imagem" onClick={() => input.current?.click()}>
+      <button class="tool" title={tr("Importar SVG ou imagem", "Import SVG or image")} onClick={() => input.current?.click()}>
         <ImageUp size={18} />
       </button>
       <input
@@ -55,6 +57,7 @@ export function ImportButton() {
 const MAX = 220;
 
 export function TraceDialog() {
+  useStore(lang);
   const pending = useStore(pendingImage);
   const [threshold, setThreshold] = useState(128);
   const [invert, setInvert] = useState(false);
@@ -108,22 +111,27 @@ export function TraceDialog() {
     <div class="modal-back" onPointerDown={close}>
       <div class="dialog" onPointerDown={(e) => e.stopPropagation()}>
         <h3>
-          <ImageUp size={16} /> Importar imagem
+          <ImageUp size={16} /> {tr("Importar imagem", "Import image")}
         </h3>
-        <p class="muted small">A imagem vira contornos. Escolha o que conta como desenho; depois, no painel, o detalhe controla quantos segmentos ela custa.</p>
+        <p class="muted small">
+          {tr(
+            "A imagem vira contornos. Escolha o que conta como desenho; depois, no painel, o detalhe controla quantos segmentos ela custa.",
+            "The image becomes outlines. Choose what counts as foreground; afterwards, the detail slider in the panel controls how many segments it costs.",
+          )}
+        </p>
         <canvas ref={preview} class="trace-preview" />
         <div class="opt-tol">
-          Limiar
+          {tr("Limiar", "Threshold")}
           <input type="range" min={1} max={254} value={threshold} onInput={(e) => setThreshold(Number((e.target as HTMLInputElement).value))} />
           <b>{threshold}</b>
         </div>
         <label class="trace-invert">
-          <input type="checkbox" checked={invert} onChange={() => setInvert(!invert)} /> Inverter (desenho claro em fundo escuro)
+          <input type="checkbox" checked={invert} onChange={() => setInvert(!invert)} /> {tr("Inverter (desenho claro em fundo escuro)", "Invert (light drawing on dark background)")}
         </label>
-        <p class="muted small">{traced.loops.length} contorno(s)</p>
+        <p class="muted small">{tr(`${traced.loops.length} contorno(s)`, `${traced.loops.length} outline(s)`)}</p>
         <div class="dialog-actions">
           <button class="btn ghost" onClick={close}>
-            Cancelar
+            {tr("Cancelar", "Cancel")}
           </button>
           <button
             class="btn primary"
@@ -133,7 +141,7 @@ export function TraceDialog() {
               close();
             }}
           >
-            Importar
+            {tr("Importar", "Import")}
           </button>
         </div>
       </div>
