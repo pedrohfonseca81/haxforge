@@ -1,14 +1,129 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0e14" />
-    <title>haxforge · HaxBall stadium editor</title>
+    <meta name="color-scheme" content="dark" />
+
+    <!-- Primary SEO Meta Tags -->
+    <title>HaxForge · Editor de Mapas e Estádios HaxBall | Modern Stadium Editor</title>
+    <meta name="title" content="HaxForge · Editor de Mapas e Estádios HaxBall | Modern Stadium Editor" />
+    <meta
+      name="description"
+      content="O editor moderno de mapas e estádios para HaxBall (.hbs). Física em tempo real no playground, gerador inteligente de campos, otimizador de curvas e edição offline no navegador."
+    />
+    <meta
+      name="keywords"
+      content="haxball, haxball map editor, editor de mapas haxball, haxball stadium editor, editor de estadio haxball, haxball stadium maker, haxball map maker, editor haxball online, hbs editor, haxball hbs, haxball physics, haxball playground, haxball maps, haxball futsal, haxball stadium generator, haxforge"
+    />
+    <meta name="author" content="HaxForge" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://pedrohfonseca81.github.io/haxforge/" />
+    <link rel="alternate" hreflang="x-default" href="https://pedrohfonseca81.github.io/haxforge/" />
+    <link rel="alternate" hreflang="pt" href="https://pedrohfonseca81.github.io/haxforge/" />
+    <link rel="alternate" hreflang="en" href="https://pedrohfonseca81.github.io/haxforge/" />
+
+    <!-- Open Graph / Facebook / Discord / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pedrohfonseca81.github.io/haxforge/" />
+    <meta property="og:site_name" content="HaxForge" />
+    <meta property="og:title" content="HaxForge · Editor de Mapas e Estádios HaxBall | Modern Stadium Editor" />
+    <meta
+      property="og:description"
+      content="Editor moderno e gratuito de mapas e estádios para HaxBall (.hbs). Física ao vivo, gerador de campos, otimizador de curvas e 100% offline no navegador."
+    />
+    <meta property="og:image" content="https://pedrohfonseca81.github.io/haxforge/og-image.png" />
+    <meta property="og:image:secure_url" content="https://pedrohfonseca81.github.io/haxforge/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="HaxForge Stadium Editor Preview" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://pedrohfonseca81.github.io/haxforge/" />
+    <meta name="twitter:title" content="HaxForge · Modern HaxBall Stadium & Map Editor" />
+    <meta
+      name="twitter:description"
+      content="Modern, offline-first HaxBall stadium & map editor (.hbs). Live physics playground, smart field generator, curve optimizer and fast browser editing."
+    />
+    <meta name="twitter:image" content="https://pedrohfonseca81.github.io/haxforge/og-image.png" />
+    <meta name="twitter:image:alt" content="HaxForge Stadium Editor Preview" />
+
+    <!-- Icons & PWA -->
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./logo.svg" />
+    <link rel="manifest" href="./site.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="HaxForge" />
+    <meta name="application-name" content="HaxForge" />
+
+    <!-- Structured Data (Schema.org) for Google Rich Results -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "HaxForge",
+        "alternateName": [
+          "HaxForge Stadium Editor",
+          "Editor de Mapas HaxBall",
+          "HaxBall Map Maker",
+          "HaxBall HBS Editor",
+          "HaxBall Stadium Generator"
+        ],
+        "url": "https://pedrohfonseca81.github.io/haxforge/",
+        "image": "https://pedrohfonseca81.github.io/haxforge/og-image.png",
+        "description": "Modern, browser-based HaxBall stadium and map editor with live physics playground, smart field generator, automatic curve optimizer, traits system, and cross-tab clipboard.",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "HaxForge Team",
+          "url": "https://github.com/pedrohfonseca81/haxforge"
+        },
+        "featureList": [
+          "Visual HaxBall stadium editing (.hbs & JSON5 format)",
+          "Live physics playground and launcher ball trajectory prediction",
+          "Smart field generator for Classic, Big, Futsal, Real Soccer, and Hockey",
+          "Automatic curve optimizer and stroke text generator",
+          "Cross-tab clipboard copy and paste",
+          "Comprehensive diagnostics, leak detection, and issue fixing",
+          "100% offline-first storage in IndexedDB"
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Semantic crawler fallback (replaced dynamically on mount) -->
+      <header style="padding: 24px; text-align: center; color: #cbd5e1; font-family: sans-serif;">
+        <h1 style="color: #ffffff; font-size: 28px; margin-bottom: 8px;">
+          HaxForge · Editor de Mapas e Estádios HaxBall (Modern Stadium Editor)
+        </h1>
+        <p style="max-width: 680px; margin: 0 auto 16px; font-size: 15px; color: #94a3b8; line-height: 1.5;">
+          HaxForge é o editor moderno de mapas para HaxBall (.hbs). Crie campos profissionais, teste a física com bot e playground ao vivo, otimize curvas e desenhe com precisão direto no navegador sem instalar nada.
+        </p>
+        <p style="font-size: 14px; color: #5b8cff;">
+          Carregando editor... / Loading editor...
+        </p>
+      </header>
+    </div>
+    <noscript>
+      <div style="padding: 24px; text-align: center; color: #ff5a5f; font-family: sans-serif;">
+        <p><strong>JavaScript é necessário para usar o editor interativo do HaxForge.</strong></p>
+        <p>Por favor, ative o JavaScript no seu navegador para criar e editar estádios do HaxBall.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "preact/hooks";
+import { useState, useMemo, useEffect } from "preact/hooks";
 import {
   ArrowLeft,
   ChevronRight,
@@ -59,6 +59,14 @@ export function Docs({ initialTopic }: { initialTopic?: string }) {
   const activeIndex = DOC_ARTICLES.findIndex((a) => a.id === activeArticle.id);
   const prevArticle = activeIndex > 0 ? DOC_ARTICLES[activeIndex - 1] : null;
   const nextArticle = activeIndex < DOC_ARTICLES.length - 1 ? DOC_ARTICLES[activeIndex + 1] : null;
+
+  useEffect(() => {
+    const prev = document.title;
+    document.title = `${activeArticle.title[l]} · Docs · HaxForge`;
+    return () => {
+      document.title = prev;
+    };
+  }, [activeArticle, l]);
 
   const selectArticle = (id: string) => {
     setActiveId(id);

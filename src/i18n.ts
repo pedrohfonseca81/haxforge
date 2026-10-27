@@ -71,7 +71,10 @@ export const lang = new Store<Lang>(initialLang());
 function syncDom(l: Lang): void {
   if (typeof document === "undefined" || !document.documentElement) return;
   document.documentElement.lang = l === "pt" ? "pt-BR" : "en";
-  document.title = l === "pt" ? "haxforge · editor de mapas do HaxBall" : "haxforge · HaxBall map editor";
+  document.title =
+    l === "pt"
+      ? "HaxForge · Editor de Mapas e Estádios HaxBall"
+      : "HaxForge · Modern HaxBall Stadium & Map Editor";
 }
 
 syncDom(lang.get());

@@ -1,0 +1,24 @@
+{
+  "name": "HaxForge · HaxBall Stadium & Map Editor",
+  "short_name": "HaxForge",
+  "description": "Modern, offline-first HaxBall stadium and map editor with live physics playground.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["games", "utilities", "design"]
+}
