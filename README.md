@@ -34,7 +34,7 @@ Type any text and it turns into segments on the field. The built-in font, **Haxf
 <td width="50%"><img src="docs/screenshots/letreiro.webp" alt="HAXBOOK text banner drawn on the futsal field"></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/screenshots/playground.webp" alt="Playground with two players and network stats"></td>
+<td width="50%"><img src="docs/screenshots/launcher.webp" alt="Playground with ball launcher and predicted trajectory"></td>
 <td width="50%" valign="top">
 
 ### Play the map without leaving the editor

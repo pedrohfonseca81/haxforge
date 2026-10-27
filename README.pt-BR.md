@@ -34,7 +34,7 @@ Digite um texto e ele vira segmentos no campo. A fonte própria, **Haxforge Sans
 <td width="50%"><img src="docs/screenshots/letreiro.webp" alt="Letreiro HAXBOOK desenhado no campo de futsal"></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/screenshots/playground.webp" alt="Playground com dois jogadores e estatísticas de rede"></td>
+<td width="50%"><img src="docs/screenshots/launcher.webp" alt="Playground com lançador de bola e trajetória prevista"></td>
 <td width="50%" valign="top">
 
 ### Jogue no mapa sem sair do editor

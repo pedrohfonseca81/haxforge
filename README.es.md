@@ -34,7 +34,7 @@ Escribe un texto y se convierte en segmentos sobre la cancha. La fuente propia, 
 <td width="50%"><img src="docs/screenshots/letreiro.webp" alt="Letrero HAXBOOK dibujado en la cancha de futsal"></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/screenshots/playground.webp" alt="Playground con dos jugadores y estadísticas de red"></td>
+<td width="50%"><img src="docs/screenshots/launcher.webp" alt="Playground con lanzador de pelota y trayectoria prevista"></td>
 <td width="50%" valign="top">
 
 ### Juega en el mapa sin salir del editor
