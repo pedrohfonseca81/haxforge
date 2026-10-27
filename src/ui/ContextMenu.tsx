@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import {
   Scissors,
   Copy,
@@ -80,11 +80,27 @@ export function ContextMenu({ menu, onClose }: { menu: ContextMenuState; onClose
     };
   }, [onClose]);
 
-  // Viewport bounds clamping
-  const menuWidth = 240;
-  const menuHeight = hasSel ? 440 : 380;
-  const left = Math.max(10, Math.min(menu.x, window.innerWidth - menuWidth - 10));
-  const top = Math.max(10, Math.min(menu.y, window.innerHeight - menuHeight - 10));
+  const [pos, setPos] = useState({ left: menu.x, top: menu.y });
+
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const pad = 12;
+    let left = menu.x;
+    let top = menu.y;
+
+    if (left + rect.width > window.innerWidth - pad) {
+      left = Math.max(pad, window.innerWidth - rect.width - pad);
+    }
+    if (top + rect.height > window.innerHeight - pad) {
+      if (menu.y - rect.height >= pad) {
+        top = menu.y - rect.height;
+      } else {
+        top = Math.max(pad, window.innerHeight - rect.height - pad);
+      }
+    }
+    setPos({ left, top });
+  }, [menu.x, menu.y, hasSel]);
 
   const run = (action: () => void) => {
     action();
@@ -95,7 +111,7 @@ export function ContextMenu({ menu, onClose }: { menu: ContextMenuState; onClose
     <div
       ref={ref}
       class="context-menu"
-      style={{ left: `${left}px`, top: `${top}px` }}
+      style={{ left: `${pos.left}px`, top: `${pos.top}px` }}
       onContextMenu={(e) => e.preventDefault()}
     >
       {hasSel ? (
