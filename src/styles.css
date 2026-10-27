@@ -175,9 +175,6 @@ kbd {
   border-radius: 8px;
   flex-shrink: 0;
 }
-.home h1 span {
-  color: var(--accent);
-}
 .home h2 {
   font-size: 13px;
   text-transform: uppercase;

@@ -55,7 +55,7 @@ export function Home() {
         <div>
           <h1>
             <img src="./logo.svg" alt="haxforge logo" class="home-logo" width="34" height="34" />
-            hax<span>forge</span>
+            haxforge
           </h1>
           <p class="muted">{tr("Editor de mapas do HaxBall. Tudo fica salvo neste navegador.", "HaxBall map editor. Everything is saved in this browser.")}</p>
         </div>
