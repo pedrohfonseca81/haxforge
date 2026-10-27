@@ -78,6 +78,15 @@ export function Home() {
           <button class="btn ghost icon-btn" title={tr("Documentação", "Documentation")} onClick={() => openDocs()}>
             <CircleHelp size={16} />
           </button>
+          <a
+            href="https://discord.gg/ZTu7zwgvhm"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn ghost small"
+            title="Discord"
+          >
+            Discord
+          </a>
           <input
             ref={file}
             type="file"
@@ -152,6 +161,25 @@ export function Home() {
           ))}
         </div>
       </section>
+
+      <footer class="home-foot">
+        <div class="home-foot-left">
+          <span class="home-foot-brand">Haxbook 2026</span>
+          <span class="home-foot-sep">·</span>
+          <span class="muted">{tr("Comunidade & editor de mapas para HaxBall", "Community & stadium editor for HaxBall")}</span>
+        </div>
+        <div class="home-foot-links">
+          <a href="https://discord.gg/ZTu7zwgvhm" target="_blank" rel="noopener noreferrer" class="home-foot-link">
+            Discord
+          </a>
+          <a href="https://github.com/pedrohfonseca81/haxforge" target="_blank" rel="noopener noreferrer" class="home-foot-link">
+            GitHub
+          </a>
+          <button class="home-foot-link btn-link" onClick={() => openDocs()}>
+            {tr("Documentação", "Documentation")}
+          </button>
+        </div>
+      </footer>
 
       {pasting && <PasteDialog onClose={() => setPasting(false)} />}
     </div>

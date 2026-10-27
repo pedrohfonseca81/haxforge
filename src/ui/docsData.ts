@@ -34,7 +34,7 @@ export interface DocArticle {
   summary: { pt: string; en: string };
   media?: {
     type: "image" | "video";
-    src: string;
+    src: string | { pt: string; en: string };
     caption: { pt: string; en: string };
   };
   sections: DocSection[];
@@ -62,7 +62,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/home.webp",
+      src: {
+        pt: "./docs/media/pt/home.webp",
+        en: "./docs/media/en/home.webp",
+      },
       caption: {
         pt: "Tela inicial do haxforge: acesso rápido a projetos locais e modelos oficiais do HaxBall.",
         en: "haxforge home screen: instant access to browser-saved projects and official HaxBall templates.",
@@ -117,7 +120,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/editor-overview.webp",
+      src: {
+        pt: "./docs/media/pt/editor-overview.webp",
+        en: "./docs/media/en/editor-overview.webp",
+      },
       caption: {
         pt: "Editor com o mapa Classic carregado: ferramentas à esquerda, canvas ao centro e painel de propriedades à direita.",
         en: "Editor with the Classic stadium: tools on the left, canvas in the center, properties inspector on the right.",
@@ -174,7 +180,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/command-palette.webp",
+      src: {
+        pt: "./docs/media/pt/command-palette.webp",
+        en: "./docs/media/en/command-palette.webp",
+      },
       caption: {
         pt: "Paleta de comandos (Ctrl+K): pesquise qualquer ação, ferramenta ou configuração instantaneamente.",
         en: "Command palette (Ctrl+K): search any action, tool, or setting instantly without leaving the keyboard.",
@@ -260,7 +269,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/physics-overlay.webp",
+      src: {
+        pt: "./docs/media/pt/physics-overlay.webp",
+        en: "./docs/media/en/physics-overlay.webp",
+      },
       caption: {
         pt: "Visualização com overlay de física: cores representam as camadas de colisão e o bias exibe a espessura física real.",
         en: "Physics overlay enabled: wall colors illustrate collision layers and bias outlines show actual collision volume.",
@@ -317,7 +329,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/traits-panel.webp",
+      src: {
+        pt: "./docs/media/pt/traits-panel.webp",
+        en: "./docs/media/en/traits-panel.webp",
+      },
       caption: {
         pt: "Aba Traits: crie e gerencie estilos reutilizáveis para aplicar as mesmas cores e físicas em múltiplos elementos.",
         en: "Traits tab: create and manage reusable presets for consistent styles and physics across multiple objects.",
@@ -416,7 +431,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/field-generator.webp",
+      src: {
+        pt: "./docs/media/pt/field-generator.webp",
+        en: "./docs/media/en/field-generator.webp",
+      },
       caption: {
         pt: "Gerador de Campo: alterne modelos (Classic, Big, Futsal, Real) e altere medidas mantendo todas as proporções.",
         en: "Field Generator: switch templates (Classic, Big, Futsal, Real) and tweak dimensions with automatic geometric recalculation.",
@@ -456,7 +474,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/smart-text.webp",
+      src: {
+        pt: "./docs/media/pt/smart-text.webp",
+        en: "./docs/media/en/smart-text.webp",
+      },
       caption: {
         pt: "Letreiro Inteligente: configure texto, tamanho, ângulo de rotação, curvatura em arco (bend) e modos de colisão.",
         en: "Smart Text: configure banner text, size, rotation angle, arc bend, and collision modes in real time.",
@@ -528,7 +549,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/image-import.webp",
+      src: {
+        pt: "./docs/media/pt/image-import.webp",
+        en: "./docs/media/en/image-import.webp",
+      },
       caption: {
         pt: "Caixa de importação de imagem: ajuste limiar de contorno e simplificação de traçado.",
         en: "Image import dialog: tune threshold and curve simplification parameters.",
@@ -564,7 +588,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/optimizer.webp",
+      src: {
+        pt: "./docs/media/pt/optimizer.webp",
+        en: "./docs/media/en/optimizer.webp",
+      },
       caption: {
         pt: "Otimizador: compare antes e depois e visualize a economia exata de segmentos antes de aplicar.",
         en: "Optimizer modal: review before/after stats and verify segment savings before applying.",
@@ -603,7 +630,10 @@ export const DOC_ARTICLES: DocArticle[] = [
     },
     media: {
       type: "image",
-      src: "./docs/media/issues-panel.webp",
+      src: {
+        pt: "./docs/media/pt/issues-panel.webp",
+        en: "./docs/media/en/issues-panel.webp",
+      },
       caption: {
         pt: "Painel de Problemas: lista avisos e erros em tempo real com botão de correção rápida.",
         en: "Issues panel: displays real-time warnings and errors with one-click automated fixes.",

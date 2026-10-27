@@ -173,9 +173,20 @@ export function Docs({ initialTopic }: { initialTopic?: string }) {
               <figure class="docs-media-figure">
                 <div class="docs-media-card">
                   {activeArticle.media.type === "video" ? (
-                    <video src={activeArticle.media.src} controls autoplay loop muted playsinline />
+                    <video
+                      src={typeof activeArticle.media.src === "string" ? activeArticle.media.src : activeArticle.media.src[l]}
+                      controls
+                      autoplay
+                      loop
+                      muted
+                      playsinline
+                    />
                   ) : (
-                    <img src={activeArticle.media.src} alt={activeArticle.title[l]} loading="lazy" />
+                    <img
+                      src={typeof activeArticle.media.src === "string" ? activeArticle.media.src : activeArticle.media.src[l]}
+                      alt={activeArticle.title[l]}
+                      loading="lazy"
+                    />
                   )}
                 </div>
                 {activeArticle.media.caption && <figcaption class="docs-caption">{activeArticle.media.caption[l]}</figcaption>}

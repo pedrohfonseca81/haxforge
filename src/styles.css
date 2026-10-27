@@ -252,6 +252,49 @@ kbd {
   text-align: center;
   margin-bottom: 8px;
 }
+.home-foot {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.home-foot-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.home-foot-brand {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.home-foot-sep {
+  color: var(--border-2);
+}
+.home-foot-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.home-foot-link {
+  color: var(--muted);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.home-foot-link:hover {
+  color: var(--accent);
+}
 
 /* ---- Modals ---- */
 .modal-back {
