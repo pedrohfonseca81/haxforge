@@ -75,4 +75,14 @@ describe("copy and paste", () => {
     const { doc: d } = pasteClip(doc, copyRefs(doc, refs), 0, 0, (n) => n);
     expect(vals(d.lists.joints)[3]).toEqual({ d0: 4, d1: 5 });
   });
+
+  test("clip serializes to JSON and pastes back cleanly across documents", () => {
+    const { doc } = importText(text);
+    const clip = copyRefs(doc, [refOf("segments", doc.lists.segments[1].id)]);
+    const serialized = JSON.stringify({ type: "haxforge_clip", clip });
+    const parsed = JSON.parse(serialized);
+    const { doc: d, refs } = pasteClip(importText(text).doc, parsed.clip, 10, 10, (n) => n);
+    expect(refs.length).toBe(3);
+    expect(d.lists.segments.length).toBe(4);
+  });
 });

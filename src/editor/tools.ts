@@ -100,6 +100,25 @@ function finishChain(): void {
   delete overlay.label;
 }
 
+export function cancelActiveChain(): boolean {
+  if (chain || jointFirst || typed) {
+    finishChain();
+    jointFirst = null;
+    delete overlay.highlight;
+    requestDraw();
+    return true;
+  }
+  return false;
+}
+
+export function hitTestWorld(p: Vec, tol = 8 / view.cam.zoom): Ref | null {
+  const s = ed();
+  return hitTest(s.doc, geo(), p, {
+    tol,
+    skip: (r) => s.hidden.has(r) || s.locked.has(r),
+  });
+}
+
 const activeTool = (): ToolId => (spaceDown ? "hand" : ed().tool);
 
 function snapAt(p: Vec, e: { shiftKey: boolean; altKey: boolean }, anchor?: Vec, skip?: (r: Ref) => boolean): Snap {

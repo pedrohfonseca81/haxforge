@@ -2,12 +2,19 @@
 // redraws when something changed, and forwards input to the tools.
 import { useEffect, useRef, useState } from "preact/hooks";
 import { draw } from "../editor/draw";
-import { editor, prefs, requestDraw, view, type ToolId } from "../editor/state";
-import { fitView, isSpaceDown, pointerDown, pointerMove, pointerUp, refreshOverlay, wheel } from "../editor/tools";
+import { editor, prefs, requestDraw, select, view, type ToolId } from "../editor/state";
+import { cancelActiveChain, fitView, hitTestWorld, isSpaceDown, pointerDown, pointerMove, pointerUp, refreshOverlay, toWorld, wheel } from "../editor/tools";
+import { refsOf, smartOf } from "../smart/smart";
 
 const CURSORS: Partial<Record<ToolId, string>> = { hand: "grab", select: "default" };
 
-export function Canvas({ tool }: { tool: ToolId }) {
+export function Canvas({
+  tool,
+  onContextMenu,
+}: {
+  tool: ToolId;
+  onContextMenu?: (menu: { x: number; y: number; worldPos: [number, number] }) => void;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   const [panning, setPanning] = useState(false);
 
@@ -88,7 +95,21 @@ export function Canvas({ tool }: { tool: ToolId }) {
         e.preventDefault();
         wheel(e, ...local(e));
       }}
-      onContextMenu={(e) => e.preventDefault()}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        if (cancelActiveChain()) return;
+        const [sx, sy] = local(e);
+        const [wx, wy] = toWorld(sx, sy);
+        const hit = hitTestWorld([wx, wy]);
+        const s = editor.get();
+        if (s && hit) {
+          if (!s.selection.includes(hit)) {
+            const group = smartOf(s.doc, hit);
+            select(group ? refsOf(group.items) : [hit]);
+          }
+        }
+        onContextMenu?.({ x: e.clientX, y: e.clientY, worldPos: [wx, wy] });
+      }}
     />
   );
 }

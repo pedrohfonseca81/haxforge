@@ -1,6 +1,6 @@
 // Editor actions, shared by keyboard shortcuts, menus and the command palette.
 import { exportText, LIST_KEYS, type ListKey } from "../doc/model";
-import { copyRefs, deleteRefs, findItem, movableRefs, moveItems, obj, parseRef, pasteClip, refOf, setField, translateRefs, updateItems, type Clip, type MoveTarget, type Ref } from "../doc/ops";
+import { addItems, copyRefs, deleteRefs, findItem, movableRefs, moveItems, obj, parseRef, pasteClip, refOf, setField, translateRefs, updateItems, type Clip, type MoveTarget, type Ref } from "../doc/ops";
 import { budget, LIMIT } from "../doc/resolve";
 import { compileStadium } from "../vendor/haxball/shared/stadium";
 import { toJson } from "../doc/model";
@@ -35,23 +35,151 @@ export function deleteSelection(): void {
   commit(deleteRefs(s.doc, s.selection), []);
 }
 
+const CLIPBOARD_STORAGE_KEY = "haxforge.clipboard";
+
+export function clipCenter(clip: Clip): [number, number] | null {
+  let count = 0;
+  let sx = 0;
+  let sy = 0;
+  if (clip.vertexes) {
+    for (const v of clip.vertexes) {
+      const o = obj(v);
+      if (typeof o.x === "number" && typeof o.y === "number") {
+        sx += o.x;
+        sy += o.y;
+        count++;
+      }
+    }
+  }
+  if (clip.discs) {
+    for (const d of clip.discs) {
+      const o = obj(d);
+      if (Array.isArray(o.pos) && typeof o.pos[0] === "number" && typeof o.pos[1] === "number") {
+        sx += o.pos[0];
+        sy += o.pos[1];
+        count++;
+      }
+    }
+  }
+  if (clip.goals) {
+    for (const g of clip.goals) {
+      const o = obj(g);
+      if (
+        Array.isArray(o.p0) &&
+        Array.isArray(o.p1) &&
+        typeof o.p0[0] === "number" &&
+        typeof o.p0[1] === "number" &&
+        typeof o.p1[0] === "number" &&
+        typeof o.p1[1] === "number"
+      ) {
+        sx += (o.p0[0] + o.p1[0]) / 2;
+        sy += (o.p0[1] + o.p1[1]) / 2;
+        count++;
+      }
+    }
+  }
+  return count > 0 ? [sx / count, sy / count] : null;
+}
+
 let clipboard: Clip | null = null;
+
+export function getClipboard(): Clip | null {
+  if (clipboard) return clipboard;
+  try {
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(CLIPBOARD_STORAGE_KEY) : null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.type === "haxforge_clip" && parsed.clip) return parsed.clip as Clip;
+      if (parsed && typeof parsed === "object") return parsed as Clip;
+    }
+  } catch {}
+  return null;
+}
+
+export function hasClipboard(): boolean {
+  return getClipboard() !== null;
+}
+
+// Sync clipboard across tabs via storage event
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (e) => {
+    if (e.key === CLIPBOARD_STORAGE_KEY && e.newValue) {
+      try {
+        const parsed = JSON.parse(e.newValue);
+        if (parsed?.type === "haxforge_clip" && parsed.clip) {
+          clipboard = parsed.clip as Clip;
+        }
+      } catch {}
+    }
+  });
+}
 
 export function copySelection(): void {
   const s = ed();
   if (!s.selection.length) return;
   clipboard = copyRefs(s.doc, s.selection);
+  try {
+    const payload = JSON.stringify({ type: "haxforge_clip", version: 1, clip: clipboard, timestamp: Date.now() });
+    localStorage.setItem(CLIPBOARD_STORAGE_KEY, payload);
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(payload);
+    }
+  } catch {}
   toast(tr("Copiado", "Copied"));
 }
+
 export function cutSelection(): void {
   copySelection();
   deleteSelection();
 }
-export function paste(offset = true): void {
-  if (!clipboard) return;
-  const g = offset ? prefs.get().grid * 2 : 0;
-  const r = pasteClip(ed().doc, clipboard, g, g, roundFor(view.cam.zoom));
+
+export function paste(offset = true, targetPos?: [number, number]): void {
+  const clip = getClipboard();
+  if (!clip) {
+    toast(tr("Área de transferência vazia", "Clipboard is empty"), "info");
+    return;
+  }
+  let dx = offset ? prefs.get().grid * 2 : 0;
+  let dy = offset ? prefs.get().grid * 2 : 0;
+
+  if (targetPos) {
+    const center = clipCenter(clip);
+    if (center) {
+      dx = targetPos[0] - center[0];
+      dy = targetPos[1] - center[1];
+    }
+  }
+
+  const r = pasteClip(ed().doc, clip, dx, dy, roundFor(view.cam.zoom));
   commit(r.doc, r.refs);
+  toast(tr("Colado", "Pasted"));
+}
+
+export function insertVertexAt(pos: [number, number]): void {
+  const round = roundFor(view.cam.zoom);
+  const x = round(pos[0]);
+  const y = round(pos[1]);
+  const r = addItems(ed().doc, "vertexes", [{ x, y }]);
+  commit(r.doc, r.ids.map((id) => refOf("vertexes", id)));
+  toast(tr("Vértice inserido", "Vertex inserted"));
+}
+
+export function insertDiscAt(pos: [number, number]): void {
+  const round = roundFor(view.cam.zoom);
+  const x = round(pos[0]);
+  const y = round(pos[1]);
+  const r = addItems(ed().doc, "discs", [{ pos: [x, y], radius: 10, color: "FFFFFF" }]);
+  commit(r.doc, r.ids.map((id) => refOf("discs", id)));
+  toast(tr("Disco inserido", "Disc inserted"));
+}
+
+export function insertTextAt(pos: [number, number]): void {
+  const round = roundFor(view.cam.zoom);
+  const x = round(pos[0]);
+  const y = round(pos[1]);
+  const made = createSmart(ed().doc, "text", { text: "HAXFORGE", x, y, size: 50 });
+  commit(made.doc, refsOf(made.smart.items));
+  toast(tr("Letreiro inserido", "Banner text inserted"));
 }
 export function duplicate(): void {
   const s = ed();

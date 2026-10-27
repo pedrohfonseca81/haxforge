@@ -56,6 +56,7 @@ import { Inspector } from "./Inspector";
 import { Layers } from "./Layers";
 import { Palette } from "./Palette";
 import { Traits } from "./Traits";
+import { ContextMenu, type ContextMenuState } from "./ContextMenu";
 import { toast } from "../editor/actions";
 import { setField } from "../doc/ops";
 import { commit } from "../editor/state";
@@ -105,6 +106,7 @@ export function Editor() {
   const optimizing = useStore(optimizerOpen);
   const showVersions = useStore(versionsOpen);
   const [palette, setPalette] = useState(false);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const cmds = useMemo(() => commands(() => void goHome()), [l]);
 
   useEffect(() => {
@@ -207,7 +209,7 @@ export function Editor() {
       </aside>
       <main class={`stage ${play === "split" ? "split" : ""}`}>
         <div class="edit-pane">
-        <Canvas tool={s.tool} />
+        <Canvas tool={s.tool} onContextMenu={setContextMenu} />
         <div class="hint">
           <span>{hintFor(s.tool)}</span>
           {DRAWING.has(s.tool) && <DrawTrait s={s} />}
@@ -268,6 +270,7 @@ export function Editor() {
       {optimizing && <OptimizerDialog onClose={() => optimizerOpen.set(false)} />}
       {showVersions && <VersionsDialog onClose={() => versionsOpen.set(false)} />}
       <TraceDialog />
+      {contextMenu && <ContextMenu menu={contextMenu} onClose={() => setContextMenu(null)} />}
     </div>
   );
 }
