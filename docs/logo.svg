@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#121722"/>
+      <stop offset="100%" stop-color="#090c12"/>
+    </linearGradient>
+    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5b8cff" stop-opacity="0.7"/>
+      <stop offset="50%" stop-color="#2a364f" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ff5a5f" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="pitch-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff5a5f" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#5b8cff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#4ea1ff" stop-opacity="0.15"/>
+    </linearGradient>
+    <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#ff5a5f" flood-opacity="0.6"/>
+    </filter>
+    <filter id="glow-blue" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#4ea1ff" flood-opacity="0.6"/>
+    </filter>
+    <filter id="glow-ball" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffffff" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Rounded Square Container (transparent canvas around rx=28) -->
+  <rect x="3" y="3" width="122" height="122" rx="28" fill="url(#bg)" stroke="url(#border)" stroke-width="2"/>
+
+  <!-- Field Inner Area -->
+  <rect x="22" y="34" width="84" height="60" rx="8" fill="url(#pitch-glow)" stroke="#5b8cff" stroke-width="2" stroke-opacity="0.75"/>
+
+  <!-- Center Line and Center Circle -->
+  <line x1="64" y1="34" x2="64" y2="94" stroke="#5b8cff" stroke-width="1.8" stroke-opacity="0.5"/>
+  <circle cx="64" cy="64" r="14" fill="none" stroke="#5b8cff" stroke-width="1.8" stroke-opacity="0.5"/>
+
+  <!-- Red Goal (Left) -->
+  <path d="M 22 49 L 14 49 A 3 3 0 0 0 11 52 L 11 76 A 3 3 0 0 0 14 79 L 22 79" fill="none" stroke="#ff5a5f" stroke-width="2" stroke-linecap="round"/>
+  <!-- Goal posts -->
+  <circle cx="22" cy="49" r="2.2" fill="#ff7a7f"/>
+  <circle cx="22" cy="79" r="2.2" fill="#ff7a7f"/>
+
+  <!-- Blue Goal (Right) -->
+  <path d="M 106 49 L 114 49 A 3 3 0 0 1 117 52 L 117 76 A 3 3 0 0 1 114 79 L 106 79" fill="none" stroke="#4ea1ff" stroke-width="2" stroke-linecap="round"/>
+  <!-- Goal posts -->
+  <circle cx="106" cy="49" r="2.2" fill="#7ab8ff"/>
+  <circle cx="106" cy="79" r="2.2" fill="#7ab8ff"/>
+
+  <!-- Red Player Disc -->
+  <circle cx="43" cy="64" r="7.5" fill="#ff5a5f" filter="url(#glow-red)"/>
+  <circle cx="43" cy="64" r="3.5" fill="#ffffff" fill-opacity="0.95"/>
+
+  <!-- Blue Player Disc -->
+  <circle cx="85" cy="64" r="7.5" fill="#4ea1ff" filter="url(#glow-blue)"/>
+  <circle cx="85" cy="64" r="3.5" fill="#ffffff" fill-opacity="0.95"/>
+
+  <!-- Ball (Center Kickoff) -->
+  <circle cx="64" cy="64" r="4.5" fill="#ffffff" filter="url(#glow-ball)"/>
+</svg>

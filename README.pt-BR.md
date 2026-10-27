@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/logo.svg" alt="haxforge logo" width="96" height="96">
+
 # haxforge
 
 [English](README.md) · **Português** · [Español](README.es.md)
@@ -7,8 +9,9 @@
 **Editor de mapas do HaxBall, visual e moderno, que roda no navegador.**<br>
 Crie do zero, gere um campo em segundos ou abra um `.hbs` e edite sem perder uma vírgula da formatação.
 
-[**Abrir o editor →**](https://pedrohfonseca81.github.io/haxforge/)
+[**Abrir o editor →**](https://pedrohfonseca81.github.io/haxforge/) · [**Comunidade no Discord →**](https://discord.gg/ZTu7zwgvhm)
 
+[![Discord](https://img.shields.io/badge/Discord-Entrar%20na%20Comunidade-5865F2?logo=discord&logoColor=white)](https://discord.gg/ZTu7zwgvhm)
 [![Deploy](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml/badge.svg)](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml)
 
 <img src="docs/screenshots/editor.webp" alt="O editor com o Futsal x3 aberto: camadas à esquerda, canvas no centro, propriedades à direita" width="100%">

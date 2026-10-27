@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/logo.svg" alt="haxforge logo" width="96" height="96">
+
 # haxforge
 
 **English** · [Português](README.pt-BR.md) · [Español](README.es.md)
@@ -7,8 +9,9 @@
 **A modern, visual HaxBall stadium editor that runs in your browser.**<br>
 Build from scratch, generate a field in seconds, or open any `.hbs` file and edit it without losing a single comma of formatting.
 
-[**Open the editor →**](https://pedrohfonseca81.github.io/haxforge/)
+[**Open the editor →**](https://pedrohfonseca81.github.io/haxforge/) · [**Discord Community →**](https://discord.gg/ZTu7zwgvhm)
 
+[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/ZTu7zwgvhm)
 [![Deploy](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml/badge.svg)](https://github.com/pedrohfonseca81/haxforge/actions/workflows/pages.yml)
 
 <img src="docs/screenshots/editor.webp" alt="The editor with Futsal x3 open: layers on the left, canvas in the center, inspector on the right" width="100%">
