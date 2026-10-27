@@ -120,7 +120,7 @@ bun test         # round trip sin pérdidas, física, linter, objetos inteligent
 bun run build    # sitio estático en dist/
 ```
 
-Cada push a `main` publica el sitio en GitHub Pages ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)). El plan y las decisiones de diseño están en [PLAN.md](PLAN.md).
+Cada push a `main` publica el sitio en GitHub Pages ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)).
 
 <details>
 <summary>Organización del código</summary>

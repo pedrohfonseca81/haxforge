@@ -345,6 +345,7 @@ function TopBar({ s, onPalette }: { s: EditorState; onPalette: () => void }) {
       <button class="icon-btn" title={tr("Projetos", "Projects")} onClick={() => void goHome()}>
         <ChevronLeft size={18} />
       </button>
+      <img src="./logo.svg" alt="haxforge logo" class="topbar-logo" width="22" height="22" />
       <span class="brand">haxforge</span>
       <input
         class="map-name"

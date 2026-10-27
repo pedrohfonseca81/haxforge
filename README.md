@@ -120,7 +120,7 @@ bun test         # lossless round-trip, physics, linter, smart objects, i18n, We
 bun run build    # static site in dist/
 ```
 
-Every push to `main` deploys the site to GitHub Pages ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)). Design notes and architecture decisions are documented in [PLAN.md](PLAN.md).
+Every push to `main` deploys the site to GitHub Pages ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)).
 
 <details>
 <summary>Code structure</summary>

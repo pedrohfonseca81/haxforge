@@ -160,6 +160,15 @@ kbd {
   flex-wrap: wrap;
   margin-bottom: 36px;
 }
+.home-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.home-logo {
+  flex-shrink: 0;
+  border-radius: 12px;
+}
 .home h1 {
   margin: 0 0 6px;
   font-size: 34px;
@@ -540,6 +549,10 @@ input.text {
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--accent);
+}
+.topbar-logo {
+  flex-shrink: 0;
+  border-radius: 5px;
 }
 .map-name {
   width: 200px;
