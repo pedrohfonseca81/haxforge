@@ -160,20 +160,20 @@ kbd {
   flex-wrap: wrap;
   margin-bottom: 36px;
 }
-.home-title-wrap {
+.home h1 {
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-.home-logo {
-  flex-shrink: 0;
-  border-radius: 12px;
-}
-.home h1 {
+  gap: 12px;
   margin: 0 0 6px;
   font-size: 34px;
   letter-spacing: -0.02em;
   font-weight: 800;
+}
+.home-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 .home h1 span {
   color: var(--accent);
