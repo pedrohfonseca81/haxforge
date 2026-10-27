@@ -3,7 +3,7 @@ import { Input } from "../shared/game";
 import { EXTRAPOLATION_MAX, EXTRAPOLATION_MIN } from "./sim";
 import { Store } from "./store";
 
-export type RenderStyle = "kickr" | "classic";
+export type RenderStyle = "modern" | "classic";
 export type Action = "up" | "down" | "left" | "right" | "kick";
 
 export const ACTION_BITS: Record<Action, number> = {
@@ -39,7 +39,7 @@ export interface Settings {
 const DEFAULTS: Settings = {
   name: "",
   avatar: "",
-  style: "kickr",
+  style: "classic",
   viewMode: -1,
   extrapolation: 0,
   goalReplay: true,
@@ -50,7 +50,7 @@ const DEFAULTS: Settings = {
   chatHeight: null,
 };
 
-const STORAGE_KEY = "kickr.settings";
+const STORAGE_KEY = "haxforge.sim.settings";
 
 function load(): Settings {
   try {

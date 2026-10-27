@@ -1,6 +1,6 @@
 // What the inspector shows for each kind of object: field types, labels and
 // HaxBall's defaults, plus helpers for flags, colors and trait inheritance.
-import { Flag } from "../vendor/kickr/shared/flags";
+import { Flag } from "../vendor/haxball/shared/flags";
 import { tr } from "../i18n";
 import { isObject, type Json, type JsonObject } from "./json";
 import type { ListKey } from "./model";

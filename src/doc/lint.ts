@@ -1,7 +1,7 @@
 // Problems in a map, found while editing. Most checks are simple; the escape
 // check floods the space each body can reach (walls inflated by its radius,
 // with the same collision tests as the physics) to find gaps it slips through.
-import { compileStadium } from "../vendor/kickr/shared/stadium";
+import { compileStadium } from "../vendor/haxball/shared/stadium";
 import { lang, tr } from "../i18n";
 import { bodies, canCollide, type Body } from "./bodies";
 import { LIST_KEYS, toJson, type Doc } from "./model";
@@ -209,7 +209,7 @@ export function lint(doc: Doc): Issue[] {
 // ---- Collision zones -------------------------------------------------------------------
 
 // Whether a body centered at p would be pushed by a wall: the same tests as
-// kickr's physics (arcs only within their span, segments only between their
+// HaxBall's physics (arcs only within their span, segments only between their
 // ends, bias making a wall one-sided and thicker).
 function segmentHits(s: NonNullable<Geo["segments"][number]>, x: number, y: number, r: number): boolean {
   let dist: number;

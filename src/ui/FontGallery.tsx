@@ -8,7 +8,7 @@ import { glyph as sansGlyph } from "../smart/font";
 import { toast } from "../editor/toast";
 import { generateText } from "../smart/text";
 import { lang, tr } from "../i18n";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 
 // Loads Google's own CSS once, only to draw the previews.
 let cssLoaded = false;

@@ -2,10 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import JSON5 from "json5";
-import { compileStadium } from "../vendor/kickr/shared/stadium";
+import { compileStadium } from "../vendor/haxball/shared/stadium";
 import { exportText, importText, newDoc, newId, toJson, type Doc } from "./model";
 
-const STADIUMS = join(import.meta.dir, "../vendor/kickr/shared/stadiums");
+const STADIUMS = join(import.meta.dir, "../vendor/haxball/shared/stadiums");
 const corpus: [string, string][] = [
   ...readdirSync(STADIUMS).map((f): [string, string] => [f, readFileSync(join(STADIUMS, f), "utf8")]),
   ["stress.hbs", readFileSync(join(import.meta.dir, "../test-fixtures/stress.hbs"), "utf8")],

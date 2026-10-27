@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { Input } from "../vendor/kickr/shared/game";
-import { parseStadium } from "../vendor/kickr/shared/stadium";
+import { Input } from "../vendor/haxball/shared/game";
+import { parseStadium } from "../vendor/haxball/shared/stadium";
 import { P1, P2, Playground } from "./engine";
 
-const classic = parseStadium(readFileSync(join(import.meta.dir, "../vendor/kickr/shared/stadiums/classic.hbs"), "utf8"));
+const classic = parseStadium(readFileSync(join(import.meta.dir, "../vendor/haxball/shared/stadiums/classic.hbs"), "utf8"));
 
 const run = (pg: Playground, ms: number) => {
   for (let t = 0; t < ms; t += 16) pg.advance(16);

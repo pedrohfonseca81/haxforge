@@ -1,6 +1,6 @@
 // Internationalization: Portuguese (pt-BR) by default for people in Brazil,
 // English (en) for everyone else, with a manual switch saved in localStorage.
-import { Store } from "./vendor/kickr/client/store";
+import { Store } from "./vendor/haxball/client/store";
 
 export type Lang = "pt" | "en";
 

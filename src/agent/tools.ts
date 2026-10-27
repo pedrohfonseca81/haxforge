@@ -12,7 +12,7 @@ import { TEMPLATES } from "../smart/field";
 import { optimize, OPTIMIZE_DEFAULTS } from "../smart/optimize";
 import { createArray, createMirror, createSmart, refsOf, smartCost, updateSmart, type Axis } from "../smart/smart";
 import { Builder, type Pt } from "../smart/builder";
-import { compileStadium } from "../vendor/kickr/shared/stadium";
+import { compileStadium } from "../vendor/haxball/shared/stadium";
 import { listProjects } from "../persist/db";
 import { ensureFont, GOOGLE_FONTS, STROKE_FONTS } from "../smart/fonts";
 import { createBlank, createField, importAsProject, openProject } from "../app";

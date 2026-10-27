@@ -3,7 +3,7 @@
 // the current text exposes document.modelContext.registerTool(tool, { signal })
 // (aborting the signal unregisters); earlier drafts and Chrome's first preview
 // used navigator.modelContext, with unregisterTool(name). Both are supported.
-import { Store } from "../vendor/kickr/client/store";
+import { Store } from "../vendor/haxball/client/store";
 import { toast } from "../editor/toast";
 import { lang, tr } from "../i18n";
 import { isToolError, TOOLS, type AgentTool } from "./tools";

@@ -6,7 +6,7 @@ import { toast } from "../editor/toast";
 import { lang, tr } from "../i18n";
 import { importImageFile } from "./ImageImport";
 import { toasts } from "../editor/actions";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 import { Editor } from "./Editor";
 import { Home } from "./Home";
 

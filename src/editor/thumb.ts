@@ -2,8 +2,8 @@
 // segments and discs, fitted into the canvas.
 import type { Doc } from "../doc/model";
 import { resolve } from "../doc/resolve";
-import { drawBackground } from "../vendor/kickr/client/render";
-import type { Stadium } from "../vendor/kickr/shared/stadium";
+import { drawBackground } from "../vendor/haxball/client/render";
+import type { Stadium } from "../vendor/haxball/shared/stadium";
 
 const hex = (c: number) => `#${(c & 0xffffff).toString(16).padStart(6, "0")}`;
 

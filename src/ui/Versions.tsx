@@ -8,7 +8,7 @@ import { restore, snapshot } from "../editor/versions";
 import { drawThumb } from "../editor/thumb";
 import { deleteVersion, listVersions, type Version } from "../persist/db";
 import { lang, locale, tr } from "../i18n";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 
 function Thumb({ text }: { text: string }) {
   const ref = useRef<HTMLCanvasElement>(null);

@@ -8,7 +8,7 @@ import { TEMPLATES } from "../templates";
 import { importText, type Doc } from "../doc/model";
 import { drawThumb } from "../editor/thumb";
 import { deleteProject, listProjects, type Project } from "../persist/db";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 
 function Thumb({ text }: { text: string }) {
   const ref = useRef<HTMLCanvasElement>(null);

@@ -7,7 +7,7 @@ import { BringToFront, SendToBack, Tags, Trash2, Copy, FlipHorizontal2, FlipVert
 import { smartSelected } from "../smart/smart";
 import { SmartPanel } from "./SmartPanel";
 import { BALL_FIELDS, effective, flagBits, flagNames, ITEM_FIELDS, ROOT_SECTIONS, traitsOf, type FieldDef, type Origin } from "../doc/fields";
-import { Flag } from "../vendor/kickr/shared/flags";
+import { Flag } from "../vendor/haxball/shared/flags";
 import { isObject, jsonEqual, type Json, type JsonObject } from "../doc/json";
 import { LIST_KEYS, newId, type ListKey } from "../doc/model";
 import { findItem, isDisc0, obj, setField, setProp, updateItems, refOf, deleteRefs, addItems, type Ref } from "../doc/ops";

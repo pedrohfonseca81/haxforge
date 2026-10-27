@@ -2,7 +2,7 @@
 import { exportText, LIST_KEYS, type ListKey } from "../doc/model";
 import { copyRefs, deleteRefs, findItem, movableRefs, moveItems, obj, parseRef, pasteClip, refOf, setField, translateRefs, updateItems, type Clip, type MoveTarget, type Ref } from "../doc/ops";
 import { budget, LIMIT } from "../doc/resolve";
-import { compileStadium } from "../vendor/kickr/shared/stadium";
+import { compileStadium } from "../vendor/haxball/shared/stadium";
 import { toJson } from "../doc/model";
 import { isObject, jsonEqual, type Json, type JsonObject } from "../doc/json";
 import { traitsOf } from "../doc/fields";
@@ -12,7 +12,7 @@ import { fitView, setTool, zoomAt } from "./tools";
 import { playMode } from "../play/mode";
 
 export { toast, toasts, type Toast } from "./toast";
-import { Store } from "../vendor/kickr/client/store";
+import { Store } from "../vendor/haxball/client/store";
 import { shareUrl } from "../persist/share";
 import { toggleLang, tr } from "../i18n";
 import { snapshot, versionsOpen } from "./versions";

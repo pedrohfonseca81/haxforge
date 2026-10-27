@@ -1,6 +1,6 @@
 // The bodies that move in a match (the ball and each team's players), with
 // the collision flags HaxBall gives them, and what each one bumps into.
-import { Flag, PLAYER_CMASK } from "../vendor/kickr/shared/flags";
+import { Flag, PLAYER_CMASK } from "../vendor/haxball/shared/flags";
 import { tr } from "../i18n";
 import type { Doc } from "./model";
 import type { Geo } from "./resolve";

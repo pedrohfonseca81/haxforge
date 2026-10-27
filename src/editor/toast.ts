@@ -1,5 +1,5 @@
 // Short messages at the bottom of the screen.
-import { Store } from "../vendor/kickr/client/store";
+import { Store } from "../vendor/haxball/client/store";
 
 export interface Toast {
   id: number;

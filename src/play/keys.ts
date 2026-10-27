@@ -1,8 +1,8 @@
 // Playground keys for one or two local players.
-import { Input } from "../vendor/kickr/shared/game";
+import { Input } from "../vendor/haxball/shared/game";
 import { P1, P2 } from "./engine";
 
-// One player: arrows or WASD, kick with X or Space (kickr's defaults).
+// One player: arrows or WASD, kick with X or Space (default controls).
 // Two players: player 1 keeps its usual kick keys (X, Space) plus . and right
 // Ctrl for the right hand, and moves with the arrows; player 2 moves with WASD
 // and kicks with left Shift or Q (keys player 1 never uses).

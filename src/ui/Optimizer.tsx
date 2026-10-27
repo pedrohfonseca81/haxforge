@@ -6,7 +6,7 @@ import { commit, editor } from "../editor/state";
 import { toast } from "../editor/toast";
 import { optimize, OPTIMIZE_DEFAULTS, type OptimizeOptions } from "../smart/optimize";
 import { lang, tr } from "../i18n";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 
 function getOptions(): [keyof OptimizeOptions, string, string][] {
   return [

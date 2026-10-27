@@ -1,8 +1,8 @@
 // Turns a Doc into drawable, hit-testable geometry, object by object. Unlike
 // compileStadium, a broken object only marks itself as invalid instead of
 // failing the whole map (the map is often half drawn while editing).
-import { Flag, parseFlags } from "../vendor/kickr/shared/flags";
-import { compileDisc, compileSegment, DISC_DEFAULTS, parseColor, withTrait, type DiscDef, type Segment, type Stadium, type Vertex } from "../vendor/kickr/shared/stadium";
+import { Flag, parseFlags } from "../vendor/haxball/shared/flags";
+import { compileDisc, compileSegment, DISC_DEFAULTS, parseColor, withTrait, type DiscDef, type Segment, type Stadium, type Vertex } from "../vendor/haxball/shared/stadium";
 import { lang, tr } from "../i18n";
 import { traitsOf } from "./fields";
 import { isObject, type JsonObject } from "./json";
@@ -48,7 +48,7 @@ export interface Geo {
   // The ball defined by ballPhysics (null for a "disc0" stadium).
   ball: DiscDef | null;
   errors: Map<string, string>;
-  // Enough of a compiled Stadium for kickr's background renderer.
+  // Enough of a compiled Stadium for HaxBall's background renderer.
   stadium: Pick<Stadium, "width" | "height" | "bg" | "spawnDistance">;
   playerRadius: number;
   // Extra collision groups every player gets (playerPhysics.cGroup).

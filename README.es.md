@@ -39,7 +39,7 @@ Escribe un texto y se convierte en segmentos sobre la cancha. La fuente propia, 
 
 ### Juega en el mapa sin salir del editor
 
-El playground ejecuta la física y el netcode de HaxBall (vía [kickr](#créditos)) dentro del navegador, sin servidor. **`/extrapolation` y `/lag` funcionan de verdad**, mostrando ping, frame confirmado y frame renderizado en pantalla. Pausa, avance cuadro a cuadro, cámara lenta, **rebobinado de 10 s**, lanzador de pelota con trayectoria prevista y segundo jugador local.
+El playground ejecuta la física y el netcode de HaxBall dentro del navegador, sin servidor. **`/extrapolation` y `/lag` funcionan de verdad**, mostrando ping, frame confirmado y frame renderizado en pantalla. Pausa, avance cuadro a cuadro, cámara lenta, **rebobinado de 10 s**, lanzador de pelota con trayectoria prevista e segundo jugador local.
 
 </td>
 </tr>
@@ -136,18 +136,17 @@ Cada push a `main` publica el sitio en GitHub Pages ([`.github/workflows/pages.y
   - `field.ts`: generador de cancha.
   - `svg.ts` y `trace.ts`: dibujos e imágenes.
   - `pattern.ts`, `optimize.ts` y `smart.ts`.
-- `src/play/`: playground (sala y cliente kickr en una red simulada, con reloj virtual y rebobinado).
+- `src/play/`: playground (sala y cliente en una red simulada, con reloj virtual y rebobinado).
 - `src/agent/`: herramientas WebMCP.
 - `src/persist/`: IndexedDB (proyectos, versiones, fuentes) y enlace del mapa.
 - `src/ui/`: pantallas y paneles en Preact.
 - `src/i18n.ts`: internacionalización (Brasil -> `pt`, otros países -> `en`).
-- `src/vendor/kickr/`: motor de kickr (física idéntica a la de HaxBall, bit a bit). Ver `VENDOR.md`.
+- `src/vendor/haxball/`: motor de física idéntica a la de HaxBall, bit a bit.
 
 </details>
 
 ## Créditos
 
-- Física, reglas, netcode y renderer clásico vienen de **kickr**, una reimplementación de HaxBall verificada bit a bit contra el original.
 - Los estadios plantilla fueron exportados del propio HaxBall. **Futsal x3** es de Bazinga (HaxMaps).
 - Las fuentes de trazo único son las **Hershey** (Dr. A. V. Hershey, U.S. National Bureau of Standards) y las **EMS** de Evil Mad Scientist (SIL OFL), mediante el paquete [hersheytext](https://github.com/techninja/hersheytextjs). Avisos completos en [`src/smart/STROKE_FONTS.md`](src/smart/STROKE_FONTS.md). Las fuentes de Google Fonts provienen del CDN de [Fontsource](https://fontsource.org).
 - HaxBall es de Mario Carbajal (basro). haxforge es un proyecto independiente de fans.

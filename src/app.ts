@@ -7,7 +7,7 @@ import { toast } from "./editor/toast";
 import { tr } from "./i18n";
 import { playMode } from "./play/mode";
 import { getProject, newProjectId, putProject } from "./persist/db";
-import { Store } from "./vendor/kickr/client/store";
+import { Store } from "./vendor/haxball/client/store";
 
 export type Screen = { name: "home" } | { name: "editor" };
 export const screen = new Store<Screen>({ name: "home" });

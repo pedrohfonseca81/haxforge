@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { ensureFont, fontLabel, MissingFont } from "../smart/fonts";
 import { FontGallery } from "./FontGallery";
 import { toast } from "../editor/toast";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 import { ChevronDown, Trash2, Unlink } from "lucide-preact";
 import type { Json, JsonObject } from "../doc/json";
 import type { Smart } from "../doc/model";

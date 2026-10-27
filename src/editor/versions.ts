@@ -4,7 +4,7 @@
 import { exportText, importText } from "../doc/model";
 import { tr } from "../i18n";
 import { deleteVersion, listVersions, newProjectId, putVersion, type Version } from "../persist/db";
-import { Store } from "../vendor/kickr/client/store";
+import { Store } from "../vendor/haxball/client/store";
 import { editor, openDoc, view } from "./state";
 
 const AUTO_EVERY = 5 * 60_000;

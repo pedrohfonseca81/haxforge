@@ -7,7 +7,7 @@ import { resolve } from "../doc/resolve";
 import { focusedIssue, issues } from "../editor/lintState";
 import { commit, ed, requestDraw, select, view, type EditorState } from "../editor/state";
 import { lang, tr } from "../i18n";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 
 const ICON = { error: CircleAlert, warn: TriangleAlert, info: Info };
 

@@ -11,7 +11,7 @@ import { LIMIT } from "../doc/resolve";
 import { commit, ed, select, type EditorState } from "../editor/state";
 import { toggleHidden, toggleLocked } from "../editor/actions";
 import { lang, tr } from "../i18n";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 import { LIST_LABELS } from "./Inspector";
 
 const LIMITED = new Set<ListKey>(["vertexes", "segments", "discs", "planes", "goals"]);

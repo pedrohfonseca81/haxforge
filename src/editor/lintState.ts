@@ -3,7 +3,7 @@
 import { lint, type Issue } from "../doc/lint";
 import type { Doc } from "../doc/model";
 import { lang } from "../i18n";
-import { Store } from "../vendor/kickr/client/store";
+import { Store } from "../vendor/haxball/client/store";
 import { editor, requestDraw } from "./state";
 
 export const issues = new Store<{ doc: Doc | null; list: Issue[] }>({ doc: null, list: [] });

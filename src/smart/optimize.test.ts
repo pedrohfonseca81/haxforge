@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { importText, newDoc, toJson } from "../doc/model";
 import { resolve } from "../doc/resolve";
-import { compileStadium } from "../vendor/kickr/shared/stadium";
+import { compileStadium } from "../vendor/haxball/shared/stadium";
 import { optimize, OPTIMIZE_DEFAULTS } from "./optimize";
 import { createSmart } from "./smart";
 

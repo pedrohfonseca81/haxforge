@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { RotateCcw, ArrowUp } from "lucide-preact";
 import { colorJson, colorValue, FLAG_LABELS, FLAG_NAMES, flagBits, flagNames, hexColor, type Origin } from "../doc/fields";
 import type { Json } from "../doc/json";
-import { Flag } from "../vendor/kickr/shared/flags";
+import { Flag } from "../vendor/haxball/shared/flags";
 import { beginGesture, endGesture } from "../editor/state";
 import { tr } from "../i18n";
 

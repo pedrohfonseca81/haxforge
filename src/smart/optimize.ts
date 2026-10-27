@@ -2,7 +2,7 @@
 // vertexes, no leftovers, collinear runs merged, and polylines that trace a
 // circle replaced by curved segments. Items owned by smart objects are left
 // alone (they are regenerated anyway).
-import { compileSegment, type Vertex } from "../vendor/kickr/shared/stadium";
+import { compileSegment, type Vertex } from "../vendor/haxball/shared/stadium";
 import { jsonEqual, type JsonObject } from "../doc/json";
 import type { Doc } from "../doc/model";
 import { deleteRefs, obj, refOf, updateItems, type Ref } from "../doc/ops";

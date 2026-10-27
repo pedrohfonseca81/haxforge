@@ -7,7 +7,7 @@ import { findItem, type Ref } from "../doc/ops";
 import { tr } from "../i18n";
 import { putProject } from "../persist/db";
 import { refsOf, smartSelected, syncMirrors } from "../smart/smart";
-import { Store } from "../vendor/kickr/client/store";
+import { Store } from "../vendor/haxball/client/store";
 
 export type ToolId = "select" | "hand" | "segment" | "vertex" | "disc" | "goal" | "plane" | "joint" | "redSpawn" | "blueSpawn" | "text";
 

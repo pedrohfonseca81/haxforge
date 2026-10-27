@@ -8,7 +8,7 @@
 import type opentype from "opentype.js";
 import { tr } from "../i18n";
 import { putFont } from "../persist/db";
-import { Store } from "../vendor/kickr/client/store";
+import { Store } from "../vendor/haxball/client/store";
 
 const fonts = new Map<string, opentype.Font>();
 // Uploaded fonts (not Google ones), for the "your fonts" list.

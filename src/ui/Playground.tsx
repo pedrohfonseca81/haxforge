@@ -7,12 +7,12 @@ import { editor } from "../editor/state";
 import { P1, P2, Playground as Engine } from "../play/engine";
 import { keyMap } from "../play/keys";
 import { playMode, type PlayMode } from "../play/mode";
-import { render as renderGame, VIEW_MODES, type Camera } from "../vendor/kickr/client/render";
-import { Input, isOvertime } from "../vendor/kickr/shared/game";
-import { DEFAULT_COLORS, TICK_MS } from "../vendor/kickr/shared/protocol";
-import { compileStadium, type Stadium } from "../vendor/kickr/shared/stadium";
+import { render as renderGame, VIEW_MODES, type Camera } from "../vendor/haxball/client/render";
+import { Input, isOvertime } from "../vendor/haxball/shared/game";
+import { DEFAULT_COLORS, TICK_MS } from "../vendor/haxball/shared/protocol";
+import { compileStadium, type Stadium } from "../vendor/haxball/shared/stadium";
 import { lang, tr } from "../i18n";
-import { Store, useStore } from "../vendor/kickr/client/store";
+import { Store, useStore } from "../vendor/haxball/client/store";
 
 
 // ---- Settings (per browser) -------------------------------------------------------

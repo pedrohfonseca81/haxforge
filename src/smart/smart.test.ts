@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { compileStadium } from "../vendor/kickr/shared/stadium";
+import { compileStadium } from "../vendor/haxball/shared/stadium";
 import { lint } from "../doc/lint";
 import { exportText, importText, newDoc, toJson, type Doc } from "../doc/model";
 import { deleteRefs, refOf, setProp } from "../doc/ops";

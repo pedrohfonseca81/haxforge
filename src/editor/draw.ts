@@ -1,12 +1,12 @@
 // Draws the editor canvas: the map as HaxBall's classic renderer shows it
-// (kickr's background code, same line widths and colors), then the editor's
+// (HaxBall's background code, same line widths and colors), then the editor's
 // layers on top: invisible objects, goals, planes, spawns, vertex handles,
 // selection, and whatever the current tool is previewing.
 import type { Doc } from "../doc/model";
 import { refOf, type Ref } from "../doc/ops";
 import { resolve, type Geo } from "../doc/resolve";
-import { drawBackground } from "../vendor/kickr/client/render";
-import type { Stadium } from "../vendor/kickr/shared/stadium";
+import { drawBackground } from "../vendor/haxball/client/render";
+import type { Stadium } from "../vendor/haxball/shared/stadium";
 import { planeLine, type Snap, type Vec } from "./geom";
 import { bodies, canCollide, roleOf, ROLE_STYLE } from "../doc/bodies";
 import { focusedIssue, issues } from "./lintState";

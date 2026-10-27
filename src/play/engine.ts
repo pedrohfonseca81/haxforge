@@ -1,18 +1,18 @@
 // The playground: a HaxBall room and its client in the same tab, connected by
-// a loopback "network" with artificial latency. The server side is kickr's
-// room logic (input scheduling with HaxBall's rules, one game step per frame),
-// the client side is kickr's ClientSim, so /extrapolation and /lag behave as
+// a loopback "network" with artificial latency. The server side is the room
+// logic (input scheduling with HaxBall's rules, one game step per frame),
+// the client side is the ClientSim, so /extrapolation and /lag behave as
 // they do online.
 //
 // Everything runs on a virtual clock: pausing, slow motion and frame stepping
 // slow down the whole universe (server, client and the network) together, so
 // the netcode never notices. The server keeps the last seconds of states,
 // which is what rewinding restores.
-import { ClientSim, EXTRAPOLATION_MAX, EXTRAPOLATION_MIN } from "../vendor/kickr/client/sim";
-import { applyInput, cloneGame, createGame, step, startGame, type Game, type Player } from "../vendor/kickr/shared/game";
-import { stepWorld } from "../vendor/kickr/shared/physics";
-import { FRAMES_PER_MS, INPUT_DELAY, MAX_AHEAD, TICK_MS, type InputEvent } from "../vendor/kickr/shared/protocol";
-import type { Stadium } from "../vendor/kickr/shared/stadium";
+import { ClientSim, EXTRAPOLATION_MAX, EXTRAPOLATION_MIN } from "../vendor/haxball/client/sim";
+import { applyInput, cloneGame, createGame, step, startGame, type Game, type Player } from "../vendor/haxball/shared/game";
+import { stepWorld } from "../vendor/haxball/shared/physics";
+import { FRAMES_PER_MS, INPUT_DELAY, MAX_AHEAD, TICK_MS, type InputEvent } from "../vendor/haxball/shared/protocol";
+import type { Stadium } from "../vendor/haxball/shared/stadium";
 
 const LATENESS_WINDOW = 15;
 const HISTORY_FRAMES = 600; // 10 s of rewind
@@ -197,7 +197,7 @@ export class Playground {
       this.toClient({ t: "pong", c: m.c, f: this.clockFrame() + INPUT_DELAY });
       return;
     }
-    // HaxBall's host scheduling (see kickr's Room.scheduleInput).
+    // HaxBall's host scheduling (see Room.scheduleInput).
     const j = this.game.frame;
     let frame = Math.max(j, Math.min(j + MAX_AHEAD, m.f));
     const expected = j + INPUT_DELAY;

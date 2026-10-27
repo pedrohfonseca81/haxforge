@@ -49,7 +49,7 @@ import { copyShareLink, optimizerOpen, commands, copyHbs, copySelection, cutSele
 import { ed, editor, patch, prefs, redo, saveNow, select, undo, type EditorState, type ToolId } from "../editor/state";
 import { cancelTool, fitView, releaseSpace, setTool, toolKey, zoomAt } from "../editor/tools";
 import { view } from "../editor/state";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 import { Canvas } from "./Canvas";
 import { Inspector } from "./Inspector";
 import { Layers } from "./Layers";

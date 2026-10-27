@@ -9,7 +9,7 @@ import concrete2Url from "./images/concrete2.png";
 import grassUrl from "./images/grass.png";
 
 const SPECTATOR_COLOR = 0x888888;
-const KICKR_FONT = "'Barlow Condensed', 'Arial Narrow', sans-serif";
+const MODERN_FONT = "'Barlow Condensed', 'Arial Narrow', sans-serif";
 
 // HaxBall's "Viewport Mode" setting: -1 Dynamic, 0 Restricted 840x410,
 // 1..7 Full 1x..2.5x zoom. Keys 0-7 select modes 0-7, like the original.
@@ -39,7 +39,7 @@ export const defaultView = (): View => ({
   mode: -1,
   bottomInset: 0,
   dt: 0,
-  style: "kickr",
+  style: "classic",
   colors: DEFAULT_COLORS,
   avatars: {},
 });
@@ -94,9 +94,9 @@ export function render(ctx: CanvasRenderingContext2D, stadium: Stadium, g: Game,
   ctx.scale(zoom, zoom);
   ctx.translate(-cam.x, -cam.y);
   ctx.lineWidth = 3;
-  const kickr = view.style === "kickr";
-  if (kickr && stadium.bg.type === "grass") drawKickrGrass(ctx, stadium);
-  else if (kickr && stadium.bg.type === "hockey") drawKickrCourt(ctx, stadium, view);
+  const modern = view.style === "modern";
+  if (modern && stadium.bg.type === "grass") drawModernGrass(ctx, stadium);
+  else if (modern && stadium.bg.type === "hockey") drawModernCourt(ctx, stadium, view);
   else drawBackground(ctx, stadium, cam);
 
   for (const s of stadium.segments) {
@@ -129,7 +129,7 @@ export function render(ctx: CanvasRenderingContext2D, stadium: Stadium, g: Game,
   if (g.discs[0]) drawIndicator(ctx, cam, g.discs[0], stadium.discs[0]?.color ?? 0xffffff, viewW, viewH);
   for (const p of players) drawIndicator(ctx, cam, g.discs[p.disc], teamColor(view, p.team), viewW, viewH);
 
-  if (kickr) drawKickrDiscs(ctx, stadium, g, players, myId, view);
+  if (modern) drawModernDiscs(ctx, stadium, g, players, myId, view);
   else drawClassicDiscs(ctx, stadium, g, players, myId, view);
 }
 
@@ -183,7 +183,7 @@ function drawClassicDiscs(ctx: CanvasRenderingContext2D, stadium: Stadium, g: Ga
   });
 }
 
-function drawKickrDiscs(ctx: CanvasRenderingContext2D, stadium: Stadium, g: Game, players: Player[], myId: number, view: View): void {
+function drawModernDiscs(ctx: CanvasRenderingContext2D, stadium: Stadium, g: Game, players: Player[], myId: number, view: View): void {
   // Shadows under everything, as if lit from the top left.
   ctx.fillStyle = "rgba(0,0,0,0.22)";
   for (const p of players) shadow(ctx, g.discs[p.disc]);
@@ -229,7 +229,7 @@ function drawKickrDiscs(ctx: CanvasRenderingContext2D, stadium: Stadium, g: Game
     ctx.stroke();
     const k = d.radius / 15;
     ctx.fillStyle = hex(colors?.text ?? 0xffffff);
-    ctx.font = `italic 800 ${17 * k}px ${KICKR_FONT}`;
+    ctx.font = `italic 800 ${17 * k}px ${MODERN_FONT}`;
     ctx.fillText(avatarOf(p, view), d.x, d.y + 1 * k);
   }
 
@@ -297,7 +297,7 @@ function gloss(ctx: CanvasRenderingContext2D, d: { x: number; y: number; radius:
 }
 
 function nameTag(ctx: CanvasRenderingContext2D, name: string, x: number, y: number): void {
-  ctx.font = `600 12px ${KICKR_FONT}`;
+  ctx.font = `600 12px ${MODERN_FONT}`;
   const w = Math.min(90, ctx.measureText(name).width) + 10;
   ctx.fillStyle = "rgba(8,12,18,0.55)";
   ctx.beginPath();
@@ -307,8 +307,8 @@ function nameTag(ctx: CanvasRenderingContext2D, name: string, x: number, y: numb
   ctx.fillText(name, x, y + 0.5, 80);
 }
 
-// Kickr's pitch: mowing stripes inside the field, crisp white markings.
-function drawKickrGrass(ctx: CanvasRenderingContext2D, stadium: Stadium): void {
+// Pitch: mowing stripes inside the field, crisp white markings.
+function drawModernGrass(ctx: CanvasRenderingContext2D, stadium: Stadium): void {
   const { width: w, height: h, kickOffRadius: r, cornerRadius } = stadium.bg;
   fillScreen(ctx, 0x16301f);
   ctx.save();
@@ -395,11 +395,11 @@ function drawArrow(ctx: CanvasRenderingContext2D, x: number, y: number, angle: n
   ctx.restore();
 }
 
-// Kickr's indoor court (maps with a "hockey" background, like futsal): a
+// Indoor court (maps with a "hockey" background, like futsal): a
 // smooth polished floor instead of concrete, team-colored ends behind the
-// goals, LED boards along the sides and the Kickr mark at center. The map's
+// goals, LED boards along the sides. The map's
 // own segments draw the markings on top.
-function drawKickrCourt(ctx: CanvasRenderingContext2D, stadium: Stadium, view: View): void {
+function drawModernCourt(ctx: CanvasRenderingContext2D, stadium: Stadium, view: View): void {
   const { width: w, height: h, kickOffRadius: r } = stadium.bg;
   const outerW = Math.max(stadium.width, w);
   const outerH = Math.max(stadium.height, h);
@@ -425,7 +425,7 @@ function drawKickrCourt(ctx: CanvasRenderingContext2D, stadium: Stadium, view: V
   sheen.addColorStop(1, "rgba(0,0,0,0.12)");
   ctx.fillStyle = sheen;
   ctx.fillRect(-w, -h, 2 * w, 2 * h);
-  // Center circle: a lime band, the Kickr accent.
+  // Center circle: an accent band.
   ctx.beginPath();
   ctx.arc(0, 0, r, 0, Math.PI * 2);
   ctx.arc(0, 0, r * 0.62, 0, Math.PI * 2, true);
@@ -438,16 +438,16 @@ function drawKickrCourt(ctx: CanvasRenderingContext2D, stadium: Stadium, view: V
   ctx.fillStyle = "#FFFFFF";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `italic 900 ${Math.round(h * 0.42)}px ${KICKR_FONT}`;
-  ctx.fillText("KICKR", -w / 2, 0);
-  ctx.fillText("KICKR", w / 2, 0);
+  ctx.font = `italic 900 ${Math.round(h * 0.42)}px ${MODERN_FONT}`;
+  ctx.fillText("HAXFORGE", -w / 2, 0);
+  ctx.fillText("HAXFORGE", w / 2, 0);
   ctx.restore();
 
   // LED boards in the runoff along both touch lines.
   const band = outerH - h;
   if (band >= 12) {
     const boardH = Math.min(18, band - 6);
-    ctx.font = `italic 800 ${Math.round(boardH * 0.8)}px ${KICKR_FONT}`;
+    ctx.font = `italic 800 ${Math.round(boardH * 0.8)}px ${MODERN_FONT}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const side of [-1, 1]) {
@@ -456,7 +456,7 @@ function drawKickrCourt(ctx: CanvasRenderingContext2D, stadium: Stadium, view: V
       ctx.fillRect(-w, y, 2 * w, boardH);
       ctx.fillStyle = "#c6ff3d";
       const step = boardH * 7;
-      for (let x = -w + step / 2; x < w; x += step) ctx.fillText("KICKR", x, y + boardH / 2 + 0.5);
+      for (let x = -w + step / 2; x < w; x += step) ctx.fillText("HAXFORGE", x, y + boardH / 2 + 0.5);
     }
   }
 }

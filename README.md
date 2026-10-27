@@ -39,7 +39,7 @@ Type any text and it turns into segments on the field. The built-in font, **Haxf
 
 ### Play the map without leaving the editor
 
-The playground runs HaxBall's exact physics and netcode (via [kickr](#credits)) right inside the browser, with no server. **`/extrapolation` and `/lag` actually work**, showing ping, confirmed frame, and rendered frame on screen. Pause, frame-by-frame step, slow motion, **10 s rewind**, ball launcher with predicted trajectory, and a local second player.
+The playground runs HaxBall's exact physics and netcode right inside the browser, with no server. **`/extrapolation` and `/lag` actually work**, showing ping, confirmed frame, and rendered frame on screen. Pause, frame-by-frame step, slow motion, **10 s rewind**, ball launcher with predicted trajectory, and a local second player.
 
 </td>
 </tr>
@@ -136,18 +136,17 @@ Every push to `main` deploys the site to GitHub Pages ([`.github/workflows/pages
   - `field.ts`: parametric field generator.
   - `svg.ts` & `trace.ts`: SVG import and raster image tracing.
   - `pattern.ts`, `optimize.ts`, and `smart.ts`.
-- `src/play/`: playground (kickr room and client over a simulated network, with virtual clock and rewind).
+- `src/play/`: playground (room and client over a simulated network, with virtual clock and rewind).
 - `src/agent/`: WebMCP agent tools.
 - `src/persist/`: IndexedDB storage (projects, versions, fonts) and compressed URL sharing.
 - `src/ui/`: Preact screens and panels.
 - `src/i18n.ts`: internationalization (Brazil -> `pt`, other countries -> `en`).
-- `src/vendor/kickr/`: kickr engine (bit-exact HaxBall physics). See `VENDOR.md`.
+- `src/vendor/haxball/`: bit-exact HaxBall physics and netcode simulation engine.
 
 </details>
 
 ## Credits
 
-- Physics, rules, netcode, and classic renderer come from **kickr**, a bit-for-bit verified HaxBall reimplementation.
 - Template stadiums were exported from HaxBall itself. **Futsal x3** is by Bazinga (HaxMaps).
 - Single-stroke fonts are **Hershey** (Dr. A. V. Hershey, U.S. National Bureau of Standards) and **EMS** by Evil Mad Scientist (SIL OFL), via [hersheytext](https://github.com/techninja/hersheytextjs). Full notices in [`src/smart/STROKE_FONTS.md`](src/smart/STROKE_FONTS.md). Google Fonts are loaded from the [Fontsource](https://fontsource.org) CDN.
 - HaxBall is by Mario Carbajal (basro). haxforge is an independent fan project.

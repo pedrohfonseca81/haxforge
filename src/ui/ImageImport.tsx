@@ -7,7 +7,7 @@ import { toast } from "../editor/toast";
 import { createSmart, refsOf } from "../smart/smart";
 import { loopsToSvg, maskFromPixels, traceMask, type Mask } from "../smart/trace";
 import { lang, tr } from "../i18n";
-import { Store, useStore } from "../vendor/kickr/client/store";
+import { Store, useStore } from "../vendor/haxball/client/store";
 
 // A raster image waiting for the trace dialog.
 export const pendingImage = new Store<{ name: string; img: HTMLImageElement } | null>(null);

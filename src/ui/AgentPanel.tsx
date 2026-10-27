@@ -5,7 +5,7 @@ import { Bot, CircleAlert, Check } from "lucide-preact";
 import { agentLog, agentStatus, enableAgents } from "../agent/webmcp";
 import { TOOLS } from "../agent/tools";
 import { lang, locale, tr } from "../i18n";
-import { useStore } from "../vendor/kickr/client/store";
+import { useStore } from "../vendor/haxball/client/store";
 import { Toggle } from "./widgets";
 
 const time = (t: number) => new Date(t).toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit", second: "2-digit" });

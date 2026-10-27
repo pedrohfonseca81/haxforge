@@ -4,11 +4,11 @@ import { join } from "node:path";
 import { lint } from "./lint";
 import { setLang } from "../i18n";
 import { importText, toJson, type Doc } from "./model";
-import { compileStadium } from "../vendor/kickr/shared/stadium";
-import { stepWorld } from "../vendor/kickr/shared/physics";
+import { compileStadium } from "../vendor/haxball/shared/stadium";
+import { stepWorld } from "../vendor/haxball/shared/physics";
 import { deleteRefs, refOf } from "./ops";
 
-const classic = readFileSync(join(import.meta.dir, "../vendor/kickr/shared/stadiums/classic.hbs"), "utf8");
+const classic = readFileSync(join(import.meta.dir, "../vendor/haxball/shared/stadiums/classic.hbs"), "utf8");
 const ids = (doc: Doc) => lint(doc).map((i) => i.id);
 
 // A closed box for the ball (radius 10), with a gap of `gap` units in its top
